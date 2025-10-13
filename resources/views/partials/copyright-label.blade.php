@@ -1,6 +1,6 @@
 <div class="cp-right-div">
     <span>
-        Copyright by If Else Devs
+        Copyright by x.x.x
     </span>
     {{-- Developed By Shaharyar Ahmed --}}
 </div>

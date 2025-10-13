@@ -11,6 +11,7 @@ use Spatie\Permission\Models\Role;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\SupplierSeeder;
 use Database\Seeders\RawMaterialSeeder;
+use Database\Seeders\RawMaterialTypeSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -44,5 +45,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $user1->assignRole($role);
+
+        $this->call([
+            RawMaterialTypeSeeder::class,
+        ]);
     }
 }

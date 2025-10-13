@@ -6,7 +6,7 @@ return new class extends SettingsMigration {
     public function up(): void
     {
         // General
-        $this->migrator->add('general.site_name', 'Starter');
+        $this->migrator->add('general.site_name', 'Dhaga Button');
         $this->migrator->add('general.site_logo', null);
         $this->migrator->add('general.account_no', null);
 

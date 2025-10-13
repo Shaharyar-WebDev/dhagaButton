@@ -3,12 +3,13 @@
 namespace App\Models\Traits;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 trait HasCachedOptions
 {
     // public static $optionsLabel = null;
 
-    public static function options(): array
+    public static function cachedOptions(string|null $optionsLabel = null): array
     {
         $className = class_basename(self::class);
         $cacheKey = "$className:options";
@@ -16,7 +17,7 @@ trait HasCachedOptions
 
         return Cache::rememberForever($cacheKey, function () {
 
-            $labelColumn = self::$optionsLabel ?? 'name';
+            $labelColumn = self::$optionsLabel ?? $optionsLabel ?? 'name';
             $optionRelations = static::$optionRelation ?? null;
             $query = self::query();
 
@@ -25,7 +26,6 @@ trait HasCachedOptions
             } else {
                 $options = $query->pluck($labelColumn, 'id')->toArray();
             }
-
 
             return $options;
         });
