@@ -31,6 +31,11 @@ trait HasCachedOptions
         });
     }
 
+    public static function options($label)
+    {
+        return self::query()->pluck($label, 'id')->toArray();
+    }
+
     public static function refreshOptionsCache(): void
     {
         $cacheKey = class_basename(self::class) . ':options';

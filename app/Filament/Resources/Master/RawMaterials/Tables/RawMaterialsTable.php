@@ -17,7 +17,7 @@ class RawMaterialsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Material')
+                    ->label('Name')
                     ->sortable()
                     ->searchable(),
 
@@ -33,8 +33,9 @@ class RawMaterialsTable
                     ->sortable(),
 
                 TextColumn::make('created_at')
-                    ->date()
-                    ->label('Created'),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->date(),
             ])
             ->filters([
                 //

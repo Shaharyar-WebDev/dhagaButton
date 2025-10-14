@@ -2,11 +2,13 @@
 
 namespace App\Models\Master;
 
+use App\Models\Traits\HasCachedOptions;
 use Illuminate\Database\Eloquent\Model;
 
 class RawMaterial extends Model
 {
-    //
+    use HasCachedOptions;
+
     protected $fillable = [
         'name',
         'unit_id',
