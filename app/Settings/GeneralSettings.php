@@ -19,7 +19,7 @@ class GeneralSettings extends Settings
     public bool $spa_mode_prefetching;
 
     public int $currency_id;
-    public ?string $account_no;
+    // public ?string $account_no;
 
     public string $content_width;
 

@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\ToggleButtons;
+use App\Filament\Resources\Master\Brands\Schemas\BrandForm;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
 class PurchaseOrderForm
@@ -74,6 +75,16 @@ class PurchaseOrderForm
                             })
                             ->helperText('Select the supplier for this purchase order.'),
 
+                        Select::make('brand_id')
+                            ->label('Brand')
+                            ->relationship('brand', 'name')
+                            // ->options(Supplier::options('name'))
+                            ->manageOptionForm(BrandForm::getForm())
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->required(),
+
                         TextInput::make('ordered_quantity')
                             ->label('Ordered Quantity')
                             ->numeric()
@@ -130,6 +141,7 @@ class PurchaseOrderForm
                             ->label('Remarks')
                             // ->placeholder('Add any special instructions or remarks...')
                             ->rows(3)
+                            ->columnSpanFull()
                             ->maxLength(500),
                     ])
                     ->columnSpanFull()

@@ -8,7 +8,7 @@ return new class extends SettingsMigration {
         // General
         $this->migrator->add('general.site_name', 'Dhaga Button');
         $this->migrator->add('general.site_logo', null);
-        $this->migrator->add('general.account_no', null);
+        // $this->migrator->add('general.account_no', null);
 
 
         $this->migrator->add('general.content_width', 'full');

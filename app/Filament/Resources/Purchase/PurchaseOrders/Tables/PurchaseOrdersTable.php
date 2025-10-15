@@ -39,7 +39,7 @@ class PurchaseOrdersTable
                     ->toggleable(),
 
                 TextColumn::make('ordered_quantity')
-                    ->label('Quantity')
+                    ->label('Ordered Quantity')
                     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? ''))
                     ->numeric(3)
                     ->sortable()
@@ -66,14 +66,14 @@ class PurchaseOrdersTable
                     ->searchable(), // if you want to filter by status
 
                 TextColumn::make('expected_delivery_date')
-                    ->label('Expected Delivery')
+                    // ->label('Expected Delivery')
                     ->date()
                     ->sortable()
                     ->toggleable()
                     ->searchable(), // optional if you want date search
 
                 TextColumn::make('created_at')
-                    ->label('Created On')
+                    // ->label('Created On')
                     ->date()
                     ->sortable()
                     ->toggleable()

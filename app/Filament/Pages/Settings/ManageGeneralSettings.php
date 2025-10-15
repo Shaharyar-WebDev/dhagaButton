@@ -52,8 +52,8 @@ class ManageGeneralSettings extends SettingsPage
                             })
                             ->nullable(),
 
-                        TextInput::make('account_no')
-                            ->required(),
+                        // TextInput::make('account_no')
+                        //     ->required(),
 
                         // Select::make('currency_id')
                         //     ->label('System currency')

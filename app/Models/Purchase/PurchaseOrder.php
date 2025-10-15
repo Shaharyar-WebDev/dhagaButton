@@ -2,8 +2,10 @@
 
 namespace App\Models\Purchase;
 
+use App\Models\Master\Brand;
 use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
+use App\Models\Purchase\DeliveryOrder;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrder extends Model
@@ -14,6 +16,7 @@ class PurchaseOrder extends Model
         'raw_material_id',
         'ordered_quantity',
         'rate',
+        'brand_id',
         'total_amount',
         'status',
         'remarks',
@@ -27,6 +30,11 @@ class PurchaseOrder extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
     // 🧵 Each purchase order is for one raw material
     public function rawMaterial()
     {
@@ -35,10 +43,10 @@ class PurchaseOrder extends Model
 
     // 📦 Optional: link to GRNs (Goods Received Notes)
     // If you’re handling receipts separately, you can connect them like this later:
-    // public function grns()
-    // {
-    //     return $this->hasMany(GoodsReceivedNote::class);
-    // }
+    public function deliveryOrders()
+    {
+        return $this->hasMany(DeliveryOrder::class);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -49,7 +57,7 @@ class PurchaseOrder extends Model
     public static function generatePoNumber(): string
     {
         // $datePart = now()->format('y-m-d-Hi'); // like PO-25-10-13-2235
-        $datePart = now()->format('y-m-d-h:iA'); // like PO-25-10-13-10:35PM
+        $datePart = now()->format('d-m-y-h:i:sA');  // like PO-25-10-13-10:35PM
         return 'PO-' . $datePart;
     }
 

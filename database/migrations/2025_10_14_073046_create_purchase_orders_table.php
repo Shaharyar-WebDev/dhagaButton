@@ -14,8 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->string('po_number')->unique();
             $table->foreignId('supplier_id')->constrained();
+            $table->foreignId('brand_id')->constrained();
             $table->foreignId('raw_material_id')->constrained();
-            $table->decimal('ordered_quantity', 12, 3);
+            $table->decimal('ordered_quantity', 12, 2);
             $table->decimal('rate', 12, 2)->nullable();
             $table->decimal('total_amount', 14, 2)->nullable();
             $table->enum('status', ['draft', 'pending', 'partially_received', 'completed', 'cancelled'])->default('pending');
