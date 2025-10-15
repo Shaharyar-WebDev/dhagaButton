@@ -135,8 +135,8 @@ class DeliveryOrderForm
                                     ->placeholder('Internal or broker reference'),
 
 
-                                FileUpload::make('delivery_order_images')
-                                    ->label('Delivery Challan Images')
+                                FileUpload::make('attachments')
+                                    ->label('Attachments')
                                     ->directory('delivery-orders')
                                     ->multiple()
                                     // ->image()

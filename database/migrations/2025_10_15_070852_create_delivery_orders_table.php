@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('do_number');
             $table->string('delivery_order_reference');
-            $table->json('delivery_order_images')->nullable();
+            $table->json('attachments')->nullable();
             $table->string('challan_reference');
             $table->foreignId('purchase_order_id')->constrained();
             $table->foreignId('raw_material_id')->constrained('raw_materials'); // Yarn
