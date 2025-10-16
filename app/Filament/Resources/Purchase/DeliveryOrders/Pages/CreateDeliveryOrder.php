@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateDeliveryOrder extends CreateRecord
 {
     protected static string $resource = DeliveryOrderResource::class;
+
+    protected static bool $canCreateAnother = false;
 }

@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Purchase\DeliveryOrders\Pages;
 
-use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Support\Actions\CustomAction;
+use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 
 class ViewDeliveryOrder extends ViewRecord
 {
@@ -14,6 +15,7 @@ class ViewDeliveryOrder extends ViewRecord
     {
         return [
             EditAction::make(),
+            CustomAction::verifyDo(),
         ];
     }
 }

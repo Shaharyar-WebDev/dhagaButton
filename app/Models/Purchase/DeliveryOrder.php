@@ -5,26 +5,32 @@ namespace App\Models\Purchase;
 use App\Models\Master\Brand;
 use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
+use Illuminate\Support\Facades\DB;
 use App\Models\Purchase\PurchaseOrder;
+use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\TwisterInventoryService;
+use App\Models\Inventory\TwisterInventory;
 
 class DeliveryOrder extends Model
 {
     protected $fillable = [
         'do_number',
         'delivery_order_reference',
-        'delivery_order_images',
+        'attachments',
         'purchase_order_id',
         'raw_material_id',
         'challan_reference',
         'supplier_id',
         'twister_id',
         'brand_id',
+        'challan_date',
         'quantity',
+        'remarks',
     ];
 
     protected $casts = [
-        'delivery_order_images' => 'array',
+        'attachments' => 'array',
     ];
 
     // Supplier from whom yarn was purchased
@@ -61,6 +67,12 @@ class DeliveryOrder extends Model
         return $this->belongsTo(Brand::class);
     }
 
+    public function twisterInventory()
+    {
+        return $this->hasOne(TwisterInventory::class, 'delivery_order_id');
+    }
+
+
     public static function generatePoNumber(): string
     {
         // $datePart = now()->format('d-m-y-Hi'); // like PO-25-10-13-2235
@@ -74,6 +86,11 @@ class DeliveryOrder extends Model
             if (!$do->do_number) {
                 $do->do_number = self::generatePoNumber();
             }
+        });
+
+        static::saved(function ($do) {
+            PurchaseOrderService::updateStatusFromDeliveryOrder($do);
+            TwisterInventoryService::recordDeliveryOrder($do);
         });
     }
 

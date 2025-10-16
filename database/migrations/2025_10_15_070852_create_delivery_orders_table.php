@@ -16,11 +16,14 @@ return new class extends Migration {
             $table->string('delivery_order_reference');
             $table->json('attachments')->nullable();
             $table->string('challan_reference');
+            $table->date('challan_date');
             $table->foreignId('purchase_order_id')->constrained();
             $table->foreignId('raw_material_id')->constrained('raw_materials'); // Yarn
             $table->foreignId('brand_id')->constrained();
             $table->foreignId('supplier_id')->constrained('suppliers');
             $table->foreignId('twister_id')->constrained('suppliers', 'id');
+            $table->text('remarks')->nullable();
+            $table->enum('status', ['draft', 'verified']);
             $table->decimal('quantity', 12, 2);
             $table->timestamps();
         });

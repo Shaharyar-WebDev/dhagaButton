@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Purchase\PurchaseOrders\Pages;
 
-use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Support\Actions\CustomAction;
+use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
 
 class ViewPurchaseOrder extends ViewRecord
 {
@@ -14,6 +15,7 @@ class ViewPurchaseOrder extends ViewRecord
     {
         return [
             EditAction::make(),
+            CustomAction::createDeliveryOrder(),
         ];
     }
 }

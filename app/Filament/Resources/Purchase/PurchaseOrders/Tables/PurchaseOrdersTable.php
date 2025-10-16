@@ -8,11 +8,15 @@ use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
 use Filament\Tables\Filters\Filter;
 use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Hidden;
+use App\Models\Purchase\PurchaseOrder;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use App\Filament\Support\Actions\CustomAction;
 
 class PurchaseOrdersTable
 {
@@ -41,9 +45,24 @@ class PurchaseOrdersTable
                 TextColumn::make('ordered_quantity')
                     ->label('Ordered Quantity')
                     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? ''))
-                    ->numeric(3)
                     ->sortable()
                     ->toggleable(),
+
+                TextColumn::make('delivery_orders_sum_quantity ')
+                    ->label('Received DO Quantity')
+                    // ->sortable()
+                    ->placeholder('-')
+                    ->getStateUsing(fn($record) => $record->delivery_orders_sum_quantity)
+                    ->toggleable()
+                    ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
+
+                TextColumn::make('available_quantity_to_receive')
+                    ->label('Quantity To Receive')
+                    // ->sortable()
+                    ->numeric(2)
+                    ->getStateUsing(fn($record) => $record->remainingQtyToReceive())
+                    ->toggleable()
+                    ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
 
                 TextColumn::make('rate')
                     ->label('Rate per Unit')
@@ -80,12 +99,31 @@ class PurchaseOrdersTable
                     ->searchable(),
             ])
             ->filters([
+                Filter::make('po_number')
+                    ->schema([
+                        TextInput::make('po_number')
+                            ->label('Purchase Order No.')
+                            ->placeholder('Enter PO number...'),
+                    ])
+                    ->query(
+                        fn($query, $data) =>
+                        $query->when(
+                            $data['po_number'],
+                            fn($q, $value) =>
+                            $q->where('po_number', 'like', "%{$value}%")
+                        )
+                    )
+                    ->indicateUsing(
+                        fn($data) =>
+                        $data['po_number'] ? 'PO Number: ' . $data['po_number'] : null
+                    ),
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options([
                         'draft' => 'Draft',
                         'pending' => 'Pending',
-                        'partially_received' => 'Partially Received',
+                        'partially_r
+                        eceived' => 'Partially Received',
                         'completed' => 'Completed',
                         'cancelled' => 'Cancelled',
                     ]),
@@ -123,6 +161,7 @@ class PurchaseOrdersTable
             ->recordActions([
                 ActionGroup::make([
                     ViewAction::make(),
+                    CustomAction::createDeliveryOrder(),
                     EditAction::make(),
                 ]),
             ])

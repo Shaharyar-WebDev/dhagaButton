@@ -43,10 +43,19 @@ class PurchaseOrder extends Model
 
     // 📦 Optional: link to GRNs (Goods Received Notes)
     // If you’re handling receipts separately, you can connect them like this later:
+
+
+    public function verifiedDeliveryOrders()
+    {
+        return $this->hasMany(DeliveryOrder::class)->where('status', 'verified');
+    }
+
+
     public function deliveryOrders()
     {
         return $this->hasMany(DeliveryOrder::class);
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -75,6 +84,33 @@ class PurchaseOrder extends Model
         $material = $this->rawMaterial->name ?? 'Unknown Material';
         return "{$this->po_number} – {$supplier} ({$material})";
     }
+
+    public function remainingQtyToReceive()
+    {
+        // total quantity ordered
+        $orderedQty = $this->ordered_quantity ?? 0;
+
+        // sum of all quantities received in delivery orders
+        $receivedQty = $this->deliveryOrders()->sum('quantity');
+
+        // remaining
+        return $orderedQty - $receivedQty;
+    }
+
+    public function getReceivedQuantityAttribute()
+    {
+        return $this->deliveryOrders()->sum('quantity');
+    }
+
+    public function hasRemainingQty(): bool
+    {
+        $orderedQty = $this->ordered_quantity ?? 0;
+
+        $receivedQty = $this->deliveryOrders()->sum('quantity');
+
+        return $receivedQty < $orderedQty;
+    }
+
 
     // Simple status color mapping for Filament badges if you want later
     public function getStatusColorAttribute(): string

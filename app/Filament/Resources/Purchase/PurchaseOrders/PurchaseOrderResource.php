@@ -52,7 +52,7 @@ class PurchaseOrderResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['rawMaterial', 'rawMaterial.type']);
+        return parent::getEloquentQuery()->with(['rawMaterial', 'rawMaterial.type'])->withSum('deliveryOrders', 'quantity');
     }
 
     public static function getPages(): array

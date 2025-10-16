@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Purchase\DeliveryOrders\Schemas;
 
+use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use App\Models\Master\Supplier;
 use Filament\Forms\Components\Select;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
@@ -18,10 +20,19 @@ class DeliveryOrderForm
 {
     public static function updateFields($state, $set)
     {
-        if (!$state)
-            return;
+        if (!$state) {
+            if (request()->has('purchase_order_id')) {
+                $reqPoId = request()->query('purchase_order_id');
+                $set('purchase_order_id', $reqPoId);
+                $poId = $reqPoId;
+            } else {
+                return;
+            }
+        } else {
+            $poId = $state;
+        }
 
-        $po = PurchaseOrder::with('rawMaterial.unit')->find($state);
+        $po = PurchaseOrder::with('rawMaterial.unit')->findOrFail($poId);
 
         if ($po) {
             $set('raw_material_id', $po->raw_material_id);
@@ -49,6 +60,7 @@ class DeliveryOrderForm
                                     ->relationship('pendingPurchaseOrder', 'po_number')
                                     ->searchable()
                                     ->reactive()
+                                    // ->default(fn() => request()->query('purchase_order_id'))
                                     ->afterStateHydrated(fn($state, $set) => self::updateFields($state, $set))
                                     ->afterStateUpdated(fn($state, $set) => self::updateFields($state, $set))
                                     ->preload()
@@ -59,6 +71,7 @@ class DeliveryOrderForm
                                     ->label('Raw Material')
                                     ->relationship('rawMaterial', 'name')
                                     ->disabled()
+                                    ->default(fn($get) => $get('raw_material_id'))
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
@@ -67,15 +80,18 @@ class DeliveryOrderForm
 
                                 Select::make('brand_id')
                                     ->label('Brand')
+                                    ->default(fn($get) => $get('brand_id'))
                                     ->relationship('brand', 'name')
                                     ->searchable()
-                                    ->disabled()
-                                    ->dehydrated()
+                                    ->manageOptionForm(SupplierForm::getForm())
+                                    // ->disabled()
+                                    // ->dehydrated()
                                     ->preload()
                                     ->required(),
 
                                 Select::make('supplier_id')
                                     ->label('Supplier')
+                                    ->default(fn($get) => $get('supplier_id'))
                                     ->relationship('supplier', 'name')
                                     ->searchable()
                                     ->disabled()
@@ -86,6 +102,7 @@ class DeliveryOrderForm
 
                                 Select::make('twister_id')
                                     ->label('Twister')
+                                    ->default(fn($get) => $get('twister_id'))
                                     ->relationship('twister', 'name')
                                     ->searchable()
                                     ->manageOptionForm(SupplierForm::getForm())
@@ -105,7 +122,13 @@ class DeliveryOrderForm
                                         ];
                                     })
                                     // ->helperText('Quantity of yarn being delivered.')
-                                    // ->suffix(fn($get) => ' ' . $get('unit_name'))
+                                    ->prefixAction(function ($state, $set, $get) {
+                                        return Action::make('max_qty')
+                                            ->icon('heroicon-o-plus')
+                                            ->action(function () use ($set, $get) {
+                                                $set('quantity', $get('available_quantity'));
+                                            });
+                                    })
                                     ->suffix(function ($state, $set, $get) {
                                         $qty = $get('available_quantity');
                                         $unitName = $get('unit_name');
@@ -134,6 +157,14 @@ class DeliveryOrderForm
                                     ->maxLength(100)
                                     ->placeholder('Internal or broker reference'),
 
+                                DatePicker::make('challan_date')
+                                    ->label('Challan Date')
+                                    ->required()
+                                    ->default(now())
+                                    // ->native(false)
+                                    ->displayFormat('d M Y')
+                                    ->closeOnDateSelection(),
+
 
                                 FileUpload::make('attachments')
                                     ->label('Attachments')
@@ -148,6 +179,7 @@ class DeliveryOrderForm
                                     })
                                     ->nullable()
                                     ->downloadable()
+                                    ->columnSpanFull()
                                     // ->helperText('Optional: Upload scanned challan or image proof.')
                                     // ->maxSize(2048)
                                     ->openable(),

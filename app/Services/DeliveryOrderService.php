@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-class CartService
+class DeliveryOrderService
 {
     /**
      * Create a new class instance.
