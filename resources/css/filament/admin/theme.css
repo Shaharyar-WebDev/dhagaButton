@@ -5,6 +5,8 @@
 
 @import './button.css';
 @import './animation.css';
+@import './safelist.css';
+
 
 /* img.fi-logo {
     @apply !h-16 !w-16 flex items-center justify-center;
@@ -237,3 +239,41 @@ img.fi-logo {
     @apply bg-red-200 text-red-900 dark:bg-red-900/40 rounded-xl shadow-md;
 }
 
+/* === Custom Components === */
+
+.balance-grid {
+    @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.balance-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-shadow hover:shadow-lg;
+}
+
+.balance-header {
+    @apply flex justify-between items-center mb-3;
+}
+
+.balance-header h3 {
+    @apply text-lg font-semibold text-gray-700 dark:text-white;
+}
+
+.balance-header span {
+    @apply text-sm font-medium text-gray-500 dark:text-gray-300;
+}
+
+.brand-list {
+    @apply flex flex-col space-y-1;
+}
+
+.brand-item {
+    @apply flex justify-between items-center text-sm text-gray-800 dark:text-gray-200
+           px-2 py-1 rounded transition hover:bg-gray-50 dark:hover:bg-gray-700;
+}
+
+.brand-name {
+    @apply font-medium;
+}
+
+.brand-amount {
+    @apply font-semibold text-indigo-600 dark:text-indigo-400;
+}

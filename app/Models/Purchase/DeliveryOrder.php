@@ -92,6 +92,10 @@ class DeliveryOrder extends Model
             PurchaseOrderService::updateStatusFromDeliveryOrder($do);
             TwisterInventoryService::recordDeliveryOrder($do);
         });
+
+        static::deleted(function ($do) {
+            PurchaseOrderService::updateStatusFromDeliveryOrder($do);
+        });
     }
 
 }

@@ -9,9 +9,9 @@ use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 
 class CustomAction
 {
-    public static function verifyDo(): Action
+    public static function verifyStatus(): Action
     {
-        return Action::make('post_do')
+        return Action::make('verify')
             ->label('Verify')
             ->visible(fn($record) => $record->status === 'draft')
             ->requiresConfirmation()

@@ -2,20 +2,21 @@
 
 namespace App\Filament\Resources\Inventory\TwisterInventories;
 
-use App\Filament\Resources\Inventory\TwisterInventories\Pages\CreateTwisterInventory;
-use App\Filament\Resources\Inventory\TwisterInventories\Pages\EditTwisterInventory;
-use App\Filament\Resources\Inventory\TwisterInventories\Pages\ListTwisterInventories;
-use App\Filament\Resources\Inventory\TwisterInventories\Pages\ViewTwisterInventory;
-use App\Filament\Resources\Inventory\TwisterInventories\Schemas\TwisterInventoryForm;
-use App\Filament\Resources\Inventory\TwisterInventories\Schemas\TwisterInventoryInfolist;
-use App\Filament\Resources\Inventory\TwisterInventories\Tables\TwisterInventoriesTable;
-use App\Filament\Support\Traits\ReadOnlyResource;
-use App\Models\Inventory\TwisterInventory;
 use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Inventory\TwisterInventory;
+use App\Filament\Support\Traits\ReadOnlyResource;
+use App\Filament\Resources\Inventory\TwisterInventories\Pages\EditTwisterInventory;
+use App\Filament\Resources\Inventory\TwisterInventories\Pages\ViewTwisterInventory;
+use App\Filament\Resources\Inventory\TwisterInventories\Pages\CreateTwisterInventory;
+use App\Filament\Resources\Inventory\TwisterInventories\Pages\ListTwisterInventories;
+use App\Filament\Resources\Inventory\TwisterInventories\Schemas\TwisterInventoryForm;
+use App\Filament\Resources\Inventory\TwisterInventories\Tables\TwisterInventoriesTable;
+use App\Filament\Resources\Inventory\TwisterInventories\Schemas\TwisterInventoryInfolist;
 
 class TwisterInventoryResource extends Resource
 {
@@ -38,7 +39,10 @@ class TwisterInventoryResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return TwisterInventoriesTable::configure($table);
+        return TwisterInventoriesTable::configure($table)
+            ->modifyQueryUsing(fn(Builder $query) => $query
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc'));
     }
 
     public static function getRelations(): array

@@ -3,14 +3,18 @@
 namespace App\Filament\Resources\Purchase\DeliveryOrders\Tables;
 
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
 use Filament\Tables\Filters\Filter;
 use Filament\Actions\BulkActionGroup;
+use Filament\Schemas\Components\Form;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Filters\SelectFilter;
 use App\Filament\Support\Actions\CustomAction;
 use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
 
@@ -40,7 +44,7 @@ class DeliveryOrdersTable
                             ],
                         ]);
                     }, true)
-                    ->copyable()
+                    // ->copyable()
                     ->sortable()
                     ->searchable()
                     ->toggleable(),
@@ -103,12 +107,12 @@ class DeliveryOrdersTable
 
                 TextColumn::make('challan_date')
                     ->label('Challan Date')
-                    ->date('d M Y')
+                    ->date('d M Y H:iA')
                     ->sortable(),
 
                 TextColumn::make('created_at')
                     // ->label('Created')
-                    ->dateTime('d M Y')
+                    ->dateTime('d M Y H:iA')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -132,12 +136,45 @@ class DeliveryOrdersTable
                         fn($data) =>
                         $data['do_number'] ? 'DO Number: ' . $data['do_number'] : null
                     ),
+                SelectFilter::make('supplier')
+                    ->relationship('supplier', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('twister')
+                    ->relationship('twister', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->recordActions([
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
-                    CustomAction::verifyDo(),
+                    CustomAction::verifyStatus(),
+                    Action::make('view_attachments')
+                        ->icon('heroicon-o-photo')
+                        ->color('info')
+                        ->schema([
+                            FileUpload::make('attachments')
+                                ->label('Attachments')
+                                ->directory('images/delivery-orders')
+                                ->disk('public')
+                                ->visibility('public')
+                                // ->multiple()
+                                ->openable()
+                                ->downloadable()
+                                // ->placeholder(null)
+                                ->previewable()
+                                ->disabled()
+                                ->deletable(false)
+                                ->dehydrated(false),
+                        ])
+                        ->mountUsing(function ($form, $record) {
+                            $attachments = $record->attachments ?? [];
+
+                            $form->fill(['attachments' => $attachments]);
+                        })
+                        ->modalSubmitAction(false)
+                        ->modalWidth('3xl'),
                 ]),
             ])
             ->toolbarActions([

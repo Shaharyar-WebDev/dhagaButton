@@ -3,31 +3,47 @@
 namespace App\Models\Purchase;
 
 use App\Models\Master\Supplier;
+use App\Models\Master\RawMaterial;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Inventory\TwisterInventory;
 use App\Models\Purchase\GoodsReceivedNoteItem;
+use App\Services\TwisterInventoryService;
 
 class GoodsReceivedNote extends Model
 {
     protected $fillable = [
         'grn_number',
-        'purchase_order_id',
         'supplier_id',
-        'reference_number',
-        'received_date',
+        'purchase_order_id',
+        'challan_no',
+        'challan_date',
+        'raw_material_id',
         'remarks',
     ];
 
 
-    // Each GRN belongs to a supplier
+    // A GRN belongs to a supplier
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
     }
 
-    // Each GRN may be linked to a purchase order
+    public function rawMaterial()
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
+
+    // A GRN belongs to a purchase order
     public function purchaseOrder()
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    // A GRN belongs to a delivery order
+    public function deliveryOrder()
+    {
+        return $this->belongsTo(DeliveryOrder::class);
     }
 
     // Optional: link to received items (if you have a GRN items table)
@@ -52,7 +68,7 @@ class GoodsReceivedNote extends Model
     // Optional: display GRN summary for tables or dropdowns
     public function getSummaryAttribute(): string
     {
-        $po = $this->purchaseOrder?->po_number ?? 'No PO';
+        $po = $this->purchaseOrder?->po_number ?? $this->purchaseOrder?->do_number ?? 'N\A';
         $supplier = $this->supplier?->name ?? 'Unknown Supplier';
         return "{$this->grn_number} — {$supplier} ({$po})";
     }
@@ -69,6 +85,10 @@ class GoodsReceivedNote extends Model
             if (!$grn->grn_number) {
                 $grn->grn_number = self::generateGrnNumber();
             }
+        });
+
+        static::saved(function ($grn) {
+            TwisterInventoryService::recordGrn($grn);
         });
     }
 }

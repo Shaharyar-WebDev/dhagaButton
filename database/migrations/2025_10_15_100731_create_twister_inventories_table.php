@@ -12,10 +12,11 @@ return new class extends Migration {
     {
         Schema::create('twister_inventories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained('suppliers');
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers');
             $table->foreignId('twister_id')->constrained('suppliers', 'id');
-            $table->string('delivery_order_id')->nullable();
-            $table->foreignId('purchase_order_id')->constrained();
+            $table->foreignId('delivery_order_id')->nullable()->constrained('delivery_orders')->cascadeOnDelete();
+            $table->foreignId('goods_received_note_id')->nullable()->constrained('goods_received_notes')->cascadeOnDelete();
+            $table->foreignId('purchase_order_id')->nullable()->constrained();
             $table->foreignId('raw_material_id')->constrained();
             $table->foreignId('brand_id')->nullable()->constrained('brands');
             $table->decimal('debit', 14, 2)->default(0);

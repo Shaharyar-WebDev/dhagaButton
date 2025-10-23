@@ -55,7 +55,7 @@ class GoodsReceivedNoteResource extends Resource
         return [
             'index' => ListGoodsReceivedNotes::route('/'),
             'create' => CreateGoodsReceivedNote::route('/create'),
-            'view' => ViewGoodsReceivedNote::route('/{record}'),
+            // 'view' => ViewGoodsReceivedNote::route('/{record}'),
             'edit' => EditGoodsReceivedNote::route('/{record}/edit'),
         ];
     }

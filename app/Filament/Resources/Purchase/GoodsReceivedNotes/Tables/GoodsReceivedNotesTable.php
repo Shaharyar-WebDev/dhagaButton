@@ -2,12 +2,18 @@
 
 namespace App\Filament\Resources\Purchase\GoodsReceivedNotes\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Support\Actions\CustomAction;
 
 class GoodsReceivedNotesTable
 {
@@ -16,33 +22,86 @@ class GoodsReceivedNotesTable
         return $table
             ->columns([
                 TextColumn::make('grn_number')
+                    ->label('GRN Number')
+                    ->sortable()
+                    ->placeholder('---')
                     ->searchable(),
-                TextColumn::make('purchase_order_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('supplier_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('reference_number')
+
+                TextColumn::make('rawMaterial.name')
+                    ->label('Raw Material')
+                    ->sortable()
+                    ->placeholder('---')
                     ->searchable(),
-                TextColumn::make('received_date')
+
+                TextColumn::make('supplier.name')
+                    ->label('Supplier')
+                    ->sortable()
+                    ->placeholder('---')
+                    ->searchable(),
+
+                TextColumn::make('purchaseOrder.po_number')
+                    ->label('Purchase Order')
+                    ->sortable()
+                    ->placeholder('---')
+                    ->searchable(),
+
+                TextColumn::make('challan_no')
+                    ->label('Challan No')
+                    ->sortable()
+                    ->placeholder('---')
+                    ->searchable(),
+
+                TextColumn::make('challan_date')
+                    ->label('Challan Date')
+                    ->date()
+                    ->placeholder('---')
+                    ->sortable(),
+
+                TextColumn::make('remarks')
+                    ->label('Remarks')
+                    ->placeholder('---')
+                    ->limit(50),
+
+                TextColumn::make('created_at')
+                    ->label('Created')
                     ->date()
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Filter::make('grn_number')
+                    ->schema([
+                        TextInput::make('grn_number')
+                            ->label('GRN No.')
+                            ->placeholder('Enter GRN number...'),
+                    ])
+                    ->query(
+                        fn($query, $data) =>
+                        $query->when(
+                            $data['grn_number'],
+                            fn($q, $value) =>
+                            $q->where('grn_number', 'like', "%{$value}%")
+                        )
+                    )
+                    ->indicateUsing(
+                        fn($data) =>
+                        $data['grn_number'] ? 'GRN Number: ' . $data['grn_number'] : null
+                    ),
+                SelectFilter::make('supplier_id')
+                    ->label('Supplier')
+                    ->relationship('supplier', 'name'),
+                SelectFilter::make('purchase_order_id')
+                    ->label('Purchase Order')
+                    ->relationship('purchaseOrder', 'po_number'),
+                SelectFilter::make('raw_material_id')
+                    ->label('Material')
+                    ->relationship('rawMaterial', 'name'),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    CustomAction::verifyStatus(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

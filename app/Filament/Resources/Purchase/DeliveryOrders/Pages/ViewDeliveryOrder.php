@@ -15,7 +15,7 @@ class ViewDeliveryOrder extends ViewRecord
     {
         return [
             EditAction::make(),
-            CustomAction::verifyDo(),
+            CustomAction::verifyStatus(),
         ];
     }
 }

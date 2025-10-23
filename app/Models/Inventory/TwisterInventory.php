@@ -6,6 +6,7 @@ use App\Models\Master\Brand;
 use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
 use App\Models\Purchase\DeliveryOrder;
+use App\Models\Purchase\GoodsReceivedNote;
 use App\Models\Purchase\PurchaseOrder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,6 +17,7 @@ class TwisterInventory extends Model
         'twister_id',
         'delivery_order_id',
         'purchase_order_id',
+        'goods_received_note_id',
         'raw_material_id',
         'brand_id',
         'debit',
@@ -34,6 +36,11 @@ class TwisterInventory extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
+
+    public function grn()
+    {
+        return $this->belongsTo(GoodsReceivedNote::class, 'goods_received_note_id');
     }
 
     // Twister (job worker) to whom yarn is sent or received from

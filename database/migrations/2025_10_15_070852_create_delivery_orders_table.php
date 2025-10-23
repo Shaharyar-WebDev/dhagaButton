@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('delivery_order_reference');
             $table->json('attachments')->nullable();
             $table->string('challan_reference');
-            $table->date('challan_date');
-            $table->foreignId('purchase_order_id')->constrained();
+            $table->datetime('challan_date');
+            $table->foreignId('purchase_order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('raw_material_id')->constrained('raw_materials'); // Yarn
             $table->foreignId('brand_id')->constrained();
             $table->foreignId('supplier_id')->constrained('suppliers');

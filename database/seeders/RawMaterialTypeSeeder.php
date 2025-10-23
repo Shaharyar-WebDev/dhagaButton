@@ -21,6 +21,9 @@ class RawMaterialTypeSeeder extends Seeder
                 'name' => 'boxes'
             ],
             [
+                'name' => 'twisted_yarn'
+            ],
+            [
                 'name' => 'labels'
             ],
             [

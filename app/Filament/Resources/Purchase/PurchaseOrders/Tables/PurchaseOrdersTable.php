@@ -52,7 +52,7 @@ class PurchaseOrdersTable
                     ->label('Received DO Quantity')
                     // ->sortable()
                     ->placeholder('-')
-                    ->getStateUsing(fn($record) => $record->delivery_orders_sum_quantity)
+                    ->getStateUsing(fn($record) => $record->verified_delivery_orders_sum_quantity)
                     ->toggleable()
                     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
 
@@ -144,18 +144,18 @@ class PurchaseOrdersTable
                             ->when($data['from'], fn($q) => $q->whereDate('expected_delivery_date', '>=', $data['from']))
                             ->when($data['to'], fn($q) => $q->whereDate('expected_delivery_date', '<=', $data['to']));
                     }),
-                // TernaryFilter::make('overdue')
-                //     ->label('Overdue')
-                //     ->trueLabel('Yes')
-                //     ->falseLabel('No')
-                //     ->queries(
-                //         true: fn($q) => $q->where('status', '!=', 'completed')
-                //             ->whereDate('expected_delivery_date', '<', now()),
-                //         false: fn($q) => $q->where(function ($query) {
-                //             $query->where('status', 'completed')
-                //                 ->orWhereDate('expected_delivery_date', '>=', now());
-                //         })
-                //     ),
+                TernaryFilter::make('overdue')
+                    ->label('Overdue')
+                    ->trueLabel('Yes')
+                    ->falseLabel('No')
+                    ->queries(
+                        true: fn($q) => $q->where('status', '!=', 'completed')
+                            ->whereDate('expected_delivery_date', '<', now()),
+                        false: fn($q) => $q->where(function ($query) {
+                            $query->where('status', 'completed')
+                                ->orWhereDate('expected_delivery_date', '>=', now());
+                        })
+                    ),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([

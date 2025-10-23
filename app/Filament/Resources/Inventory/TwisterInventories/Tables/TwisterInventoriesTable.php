@@ -13,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 
 class TwisterInventoriesTable
 {
@@ -26,7 +27,23 @@ class TwisterInventoriesTable
                         return DeliveryOrderResource::getUrl('index', [
                             'filters' => [
                                 'do_number' => [
-                                    'do_number' => $record->deliveryOrder->do_number
+                                    'do_number' => $record->deliveryOrder?->do_number
+                                ]
+                            ],
+                        ]);
+                    }, true)
+                    ->placeholder('---')
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('purchaseOrder.po_number')
+                    ->label('Purchase Order')
+                    ->placeholder('---')
+                    ->url(function ($record) {
+                        return PurchaseOrderResource::getUrl('index', [
+                            'filters' => [
+                                'po_number' => [
+                                    'po_number' => $record->purchaseOrder?->po_number
                                 ]
                             ],
                         ]);
@@ -34,33 +51,59 @@ class TwisterInventoriesTable
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('purchaseOrder.po_number')
-                    ->label('Purchase Order')
+                TextColumn::make('grn.grn_number')
+                    ->label('Goods Received Note')
+                    ->placeholder('---')
                     ->url(function ($record) {
-                        return PurchaseOrderResource::getUrl('index', [
+                        return GoodsReceivedNoteResource::getUrl('index', [
                             'filters' => [
-                                'po_number' => [
-                                    'po_number' => $record->purchaseOrder->po_number
+                                'grn_number' => [
+                                    'grn_number' => $record->grn?->grn_number
                                 ]
                             ],
                         ]);
                     }, true)
                     ->sortable()
                     ->toggleable(),
+
+                TextColumn::make('challan_reference')
+                    ->label('Challan Reference')
+                    ->toggleable()
+                    ->copyable()
+                    ->placeholder('---')
+                    ->getStateUsing(fn($record) => $record?->deliveryOrder->challan_reference ?? $record->grn?->challan_no)
+                    ->searchable(query: function ($query, $search) {
+                        $query->whereHas('deliveryOrder', function ($q) use ($search) {
+                            $q->where('challan_reference', 'like', "%{$search}%");
+                        });
+                    }),
+
+                TextColumn::make('delivery_order_reference')
+                    ->label('Delivery Order Ref')
+                    ->toggleable()
+                    ->copyable()
+                    ->placeholder('---')
+                    ->getStateUsing(fn($record) => $record?->deliveryOrder?->delivery_order_reference)
+                    ->searchable(query: function ($query, $search) {
+                        $query->whereHas('deliveryOrder', function ($q) use ($search) {
+                            $q->where('delivery_order_reference', 'like', "%{$search}%");
+                        });
+                    }),
 
                 TextColumn::make('rawMaterial.name')
                     ->label('Raw Material')
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('brand.name')
-                    ->label('Brand')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-
                 TextColumn::make('supplier.name')
                     ->label('Supplier')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('---')
+                    ->toggleable(),
+
+                TextColumn::make('brand.name')
+                    ->label('Brand')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -87,7 +130,7 @@ class TwisterInventoriesTable
 
                 TextColumn::make('balance')
                     ->label('Balance')
-                    ->suffix(fn($record) => $record->rawMaterial?->unit?->symbol)
+                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->numeric(2)
                     ->color('primary')
                     ->alignRight()
@@ -109,11 +152,15 @@ class TwisterInventoriesTable
                     ->sortable()
                     ->toggleable(),
             ])
-            ->defaultSort('twister_inventories.created_at', 'desc')
             ->filters([
-                SelectFilter::make('twister_id')
+                SelectFilter::make('supplier')
+                    ->relationship('supplier', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('twister')
                     ->relationship('twister', 'name')
-                    ->label('Twister'),
+                    ->searchable()
+                    ->preload(),
                 SelectFilter::make('brand_id')
                     ->relationship('brand', 'name')
                     ->label('Brand'),

@@ -6,6 +6,7 @@ use App\Models\Master\Brand;
 use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
 use App\Models\Purchase\DeliveryOrder;
+use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrder extends Model
@@ -63,6 +64,11 @@ class PurchaseOrder extends Model
     |--------------------------------------------------------------------------
     */
 
+    public function getVerifiedDeliveryOrdersSumQuantityAttribute()
+    {
+        return $this->verifiedDeliveryOrders()->sum('quantity');
+    }
+
     public static function generatePoNumber(): string
     {
         // $datePart = now()->format('y-m-d-Hi'); // like PO-25-10-13-2235
@@ -91,7 +97,10 @@ class PurchaseOrder extends Model
         $orderedQty = $this->ordered_quantity ?? 0;
 
         // sum of all quantities received in delivery orders
-        $receivedQty = $this->deliveryOrders()->sum('quantity');
+        $receivedQty = $this
+            // ->deliveryOrders()
+            ->verifiedDeliveryOrders()
+            ->sum('quantity');
 
         // remaining
         return $orderedQty - $receivedQty;
@@ -158,6 +167,10 @@ class PurchaseOrder extends Model
             if (!$po->po_number) {
                 $po->po_number = self::generatePoNumber();
             }
+        });
+
+        static::saved(function ($po) {
+            PurchaseOrderService::handlePoStatusForYarn($po);
         });
     }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Purchase\DeliveryOrder;
+use App\Models\Purchase\PurchaseOrder;
 
 class PurchaseOrderService
 {
@@ -22,17 +23,29 @@ class PurchaseOrderService
         if (!$purchaseOrder)
             return;
 
-        $ordered = $purchaseOrder->ordered_quantity;
-        $received = $purchaseOrder->verifiedDeliveryOrders()->sum('quantity');
 
+        self::handlePoStatusForYarn($purchaseOrder);
 
-        DB::transaction(function () use ($received, $ordered, $purchaseOrder) {
-            if ($received >= $ordered) {
-                $purchaseOrder->update(['status' => 'completed']);
-            } elseif ($received > 0) {
-                $purchaseOrder->update(['status' => 'partially_received']);
-            }
-        });
+    }
+
+    public static function handlePoStatusForYarn(PurchaseOrder $purchaseOrder)
+    {
+        if (in_array($purchaseOrder->rawMaterial->type->name, ['yarns', 'yarn'])) {
+            $ordered = $purchaseOrder->ordered_quantity;
+            $received = $purchaseOrder->verifiedDeliveryOrders()->sum('quantity');
+
+            DB::transaction(function () use ($received, $ordered, $purchaseOrder) {
+                if ($received >= $ordered) {
+                    $purchaseOrder->updateQuietly(['status' => 'completed']);
+                } elseif ($received > 0) {
+                    $purchaseOrder->updateQuietly(['status' => 'partially_received']);
+                } else {
+                    $purchaseOrder->updateQuietly(['status' => 'pending']);
+                }
+            });
+            // dd($purchaseOrder, $ordered, $received);
+
+        }
     }
 
 }

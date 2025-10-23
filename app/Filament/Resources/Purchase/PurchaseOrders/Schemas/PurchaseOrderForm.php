@@ -53,6 +53,19 @@ class PurchaseOrderForm
 
                                 $set('unit_name', $unitName);
                             })
+                            ->afterStateHydrated(function ($state, $set) {
+                                // $unitName = RawMaterial::select('id', 'unit_id')
+                                //     ->with(['unit:id,name'])
+                                //     ->findOrFail($state)
+                                //     ->unit
+                                //     ->name;
+                                $unitName = DB::table('raw_materials')
+                                    ->join('units', 'raw_materials.unit_id', '=', 'units.id')
+                                    ->where('raw_materials.id', $state)
+                                    ->value('units.symbol');
+
+                                $set('unit_name', $unitName);
+                            })
                             ->required()
                             ->helperText('Select which material is being purchased.'),
 
@@ -88,18 +101,48 @@ class PurchaseOrderForm
                         TextInput::make('ordered_quantity')
                             ->label('Ordered Quantity')
                             ->numeric()
-                            ->step('0.001')
+                            ->step('0.01')
                             ->required()
                             ->reactive()
+                            ->rules(function ($record) {
+                                if ($record?->exists && $record->deliveryOrders()->exists()) {
+
+                                    $poDoQty = $record->deliveryOrders()->sum('quantity');
+                                    return [
+                                        "min:$poDoQty",
+                                    ];
+                                }
+
+                                return ['min:1'];
+                            })
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 $rate = (float) $get('rate') ?? 0;
                                 $set('total_amount', $state * $rate);
                             })
+                            // ->prefix(function ($record) {
+                            //     if ($record) {
+                            //         $rcvdQty = $record->verified_delivery_orders_sum_quantity;
+                            //         if (!$rcvdQty) {
+                            //             return;
+                            //         }
+                            //         return "$rcvdQty Received";
+                            //     }
+                            // })
                             ->suffix(function ($state, $set, $get) {
                                 return $get('unit_name') ?? '';
                             })
-                            ->helperText('Total ordered quantity in the selected unit.'),
+                            ->helperText(function ($record) {
+                                if ($record) {
+                                    $rcvdQty = $record->verified_delivery_orders_sum_quantity;
+                                    if (!$rcvdQty) {
+                                        return;
+                                    }
+                                    return "$rcvdQty Already Received";
+                                }
+                            }),
+
+
 
                         TextInput::make('rate')
                             ->label('Rate per Unit')

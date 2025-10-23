@@ -24,6 +24,7 @@ class DeliveryOrderForm
             if (request()->has('purchase_order_id')) {
                 $reqPoId = request()->query('purchase_order_id');
                 $set('purchase_order_id', $reqPoId);
+                $set('request_po_id', $reqPoId);
                 $poId = $reqPoId;
             } else {
                 return;
@@ -41,7 +42,7 @@ class DeliveryOrderForm
             $set('unit_name', $po->rawMaterial?->unit?->symbol);
             $set('max_quantity', $po->ordered_quantity);
 
-            $doQty = $po->deliveryOrders?->sum('quantity') ?? 0;
+            $doQty = $po->deliveryOrders()->sum('quantity') ?? 0;
             $poQty = $po->ordered_quantity ?? 0;
 
             $set('available_quantity', $poQty - $doQty);
@@ -57,13 +58,15 @@ class DeliveryOrderForm
                             ->schema([
                                 Select::make('purchase_order_id')
                                     ->label('Purchase Order')
-                                    ->relationship('pendingPurchaseOrder', 'po_number')
+                                    ->relationship('purchaseOrder', 'po_number')
                                     ->searchable()
+                                    ->disabled(fn($get) => $get('id') || $get('request_po_id'))
                                     ->reactive()
                                     // ->default(fn() => request()->query('purchase_order_id'))
                                     ->afterStateHydrated(fn($state, $set) => self::updateFields($state, $set))
                                     ->afterStateUpdated(fn($state, $set) => self::updateFields($state, $set))
                                     ->preload()
+                                    ->dehydrated()
                                     // ->helperText('Supplier or broker who provided the yarn.')
                                     ->required(),
 
@@ -84,8 +87,8 @@ class DeliveryOrderForm
                                     ->relationship('brand', 'name')
                                     ->searchable()
                                     ->manageOptionForm(SupplierForm::getForm())
-                                    // ->disabled()
-                                    // ->dehydrated()
+                                    ->disabled()
+                                    ->dehydrated()
                                     ->preload()
                                     ->required(),
 
@@ -116,7 +119,13 @@ class DeliveryOrderForm
                                     ->required()
                                     ->step(0.01)
                                     ->rules(function ($state, $set, $get) {
-                                        $maxQty = $get('max_quantity');
+                                        $maxQty = $get('available_quantity');
+                                        $recordId = $get('id'); // when editing, this will have a value
+
+                                        if ($recordId) {
+                                            // Editing existing record: skip strict max check
+                                            return [];
+                                        }
                                         return [
                                             "max:$maxQty"
                                         ];
@@ -130,10 +139,14 @@ class DeliveryOrderForm
                                             });
                                     })
                                     ->suffix(function ($state, $set, $get) {
-                                        $qty = $get('available_quantity');
+                                        $qty = $get('available_quantity') ?? 0;
                                         $unitName = $get('unit_name');
-                                        if ($qty) {
-                                            return "$qty $unitName Reamining";
+                                        if ($get('purchase_order_id')) {
+                                            if ($qty) {
+                                                return "$qty $unitName Reamining";
+                                            } else {
+                                                return "No Qty Available";
+                                            }
                                         }
                                     }),
 

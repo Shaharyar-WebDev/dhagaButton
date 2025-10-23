@@ -13,9 +13,9 @@ return new class extends Migration {
         Schema::create('goods_received_note_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('goods_received_note_id')->constrained('goods_received_notes')->cascadeOnDelete();
-            $table->foreignId('raw_material_id')->constrained();
-            $table->foreignId('brand_id')->nullable()->constrained(); // for inventory/packing tracking
-            $table->decimal('quantity', 12, 3);
+            $table->foreignId('brand_id')->constrained('brands');
+            $table->decimal('quantity', 12, 2)->default(0);
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }

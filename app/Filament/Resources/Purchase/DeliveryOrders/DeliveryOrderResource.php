@@ -20,7 +20,10 @@ class DeliveryOrderResource extends Resource
 {
     protected static ?string $model = DeliveryOrder::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    public static function getNavigationIcon(): string|BackedEnum|null
+    {
+        return 'heroicon-o-clipboard-document-check';
+    }
 
     protected static ?string $recordTitleAttribute = 'do_number';
 

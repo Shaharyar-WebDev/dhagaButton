@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages;
 
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Support\Actions\CustomAction;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 
 class EditGoodsReceivedNote extends EditRecord
 {
@@ -15,6 +16,7 @@ class EditGoodsReceivedNote extends EditRecord
     {
         return [
             ViewAction::make(),
+            CustomAction::verifyStatus(),
             DeleteAction::make(),
         ];
     }

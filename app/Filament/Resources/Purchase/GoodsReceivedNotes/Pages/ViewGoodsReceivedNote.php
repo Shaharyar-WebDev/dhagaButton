@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages;
 
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Support\Actions\CustomAction;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 
 class ViewGoodsReceivedNote extends ViewRecord
 {
@@ -14,6 +15,7 @@ class ViewGoodsReceivedNote extends ViewRecord
     {
         return [
             EditAction::make(),
+            CustomAction::verifyStatus(),
         ];
     }
 }

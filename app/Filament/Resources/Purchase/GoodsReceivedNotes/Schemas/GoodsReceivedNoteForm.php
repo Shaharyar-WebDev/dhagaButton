@@ -2,26 +2,246 @@
 
 namespace App\Filament\Resources\Purchase\GoodsReceivedNotes\Schemas;
 
+use App\Models\Master\Brand;
 use Filament\Schemas\Schema;
+use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\View;
+use App\Models\Purchase\DeliveryOrder;
 use App\Models\Purchase\PurchaseOrder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
+use App\Services\TwisterInventoryService;
 use Filament\Forms\Components\DatePicker;
+use App\Models\Inventory\TwisterInventory;
+use Filament\Forms\Components\Placeholder;
+use Filament\Infolists\Components\TextEntry;
 use App\Filament\Resources\Master\Brands\Schemas\BrandForm;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
 class GoodsReceivedNoteForm
 {
+    public static function updateFields($state, $set)
+    {
+        if (!$state) {
+            if (request()->has('purchase_order_id')) {
+                $reqPoId = request()->query('purchase_order_id');
+                $set('purchase_order_id', $reqPoId);
+                $set('request_po_id', $reqPoId);
+                // $poId = $reqPoId;
+
+            } else if (request()->has('delivery_order_id')) {
+                $reqDoId = request()->query('delivery_order_id');
+                $set('delivery_order_id', $reqDoId);
+                $set('request_do_id', $reqDoId);
+                // $doId = $reqDoId;
+            } else {
+                return;
+            }
+        }
+
+        // if ($reqPoId) {
+        //     $po = PurchaseOrder::findOrFail($reqPoId);
+
+        //     if ($po) {
+        //         $set('raw_material_id', $po->raw_material_id);
+        //         $set('brand_id', $po->brand_id);
+        //         $set('supplier_id', $po->supplier_id);
+        //         $set('unit_name', $po->rawMaterial?->unit?->symbol);
+        //         $set('max_quantity', $po->ordered_quantity);
+
+        //         $doQty = $po->deliveryOrders()->sum('quantity') ?? 0;
+        //         $poQty = $po->ordered_quantity ?? 0;
+
+        //         $set('available_quantity', $poQty - $doQty);
+        //     }
+        // }
+
+        // if ($reqDoId) {
+        //     $po = DeliveryOrder::findOrFail($reqPoId);
+        // }
+
+
+
+
+    }
+
     public static function getForm()
     {
-        return [
-            Section::make()->columnSpanFull()->schema([
+        function checkIfIsPurchasing(callable $set)
+        {
+            if (request()->has('is_purchasing')) {
+                $set('is_purchasing', true);
+            }
+        }
 
+        return [
+            Section::make()->columnSpanFull()->columns(2)->schema([
+                Grid::make(3)->columnSpanFull()->schema([
+
+
+                    Select::make('raw_material_id')
+                        ->label('Raw Material')
+                        ->relationship('rawMaterial', 'name')
+                        ->afterStateHydrated(fn($set) => checkIfIsPurchasing($set))
+                        ->afterStateUpdated(function ($state, $set, $get) {
+
+                            if (!$state)
+                                return;
+                            $rawMaterial = RawMaterial::find($state);
+
+                            if (!$rawMaterial)
+                                return;
+
+                            if ($rawMaterial->type->name === 'twisted_yarn') {
+
+                            };
+
+                            $set('unit_name', $rawMaterial->unit?->symbol);
+                        })
+                        ->reactive()
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+
+                    Select::make('supplier_id')
+                        ->label('Supplier')
+                        ->relationship('supplier', 'name')
+                        ->preload()
+                        ->reactive()
+                        ->searchable()
+                        ->required(),
+
+                    Select::make('purchase_order_id')
+                        ->label('Purchase Order')
+                        ->disabled(fn($get) => $get('request_do_id'))
+                        ->afterStateHydrated(fn($state, $set) => self::updateFields($state, $set))
+                        ->afterStateUpdated(fn($state, $set) => self::updateFields($state, $set))
+                        ->relationship('purchaseOrder', 'po_number')
+                        ->searchable()
+                        ->nullable(),
+
+                ]),
+
+                TextInput::make('challan_no')
+                    ->label('Challan Number')
+                    ->nullable()
+                    ->maxLength(255),
+
+                DatePicker::make('challan_date')
+                    ->label('Challan Date')
+                    ->required(),
+
+                Section::make()
+                    ->columnSpanFull()
+                    ->schema([
+                        TextEntry::make('twisted_inventory_info')
+                            ->label('Twisted Yarn Inventory')
+                            ->html()
+                            ->state(function ($get) {
+                                $balances = TwisterInventoryService::getBalancesByTwisterAndBrand();
+                                return TwisterInventoryService::renderHtml($balances);
+                            })
+                    ])
+                    ->visible(function ($get) {
+
+                        if ($get('raw_material_id') && RawMaterial::find($get('raw_material_id'))?->type?->name == 'twisted_yarn') {
+
+                            if ($get('is_purchasing')) {
+                                return false;
+                            } else {
+                                return true;
+                            }
+
+                        };
+
+                        return false;
+                    }),
+
+                Repeater::make('items')
+                    ->relationship()
+                    ->defaultItems(0)
+                    ->minItems(1)
+                    ->statePath('items')
+                    ->label('Goods Received Note Items')
+                    ->addActionLabel('Add Item')
+                    ->schema([
+                        Select::make('brand_id')
+                            ->label('Brand')
+                            ->reactive()
+                            ->relationship('brand', 'name')
+                            ->required(),
+
+                        TextInput::make('quantity')
+                            ->label('Quantity')
+                            ->numeric()
+                            ->suffix(fn($get) => $get('../../unit_name'))
+                            ->rules(function ($get) {
+                                return [
+                                    function ($attribute, $value, $fail) use ($get) {
+                                        $brandId = $get('brand_id');
+                                        $supplierId = $get('../../supplier_id');
+
+                                        if (!$brandId || !$supplierId)
+                                            return;
+
+                                        // Get total available balance for the brand
+                                        $balance = TwisterInventory::where('twister_id', $supplierId)
+                                            ->where('brand_id', $brandId)
+                                            ->sum(DB::raw('credit - debit'));
+
+                                        // Sum all quantities entered in repeater for this brand
+                                        $repeaterItems = $get('../../items');
+                                        $totalQuantity = 0;
+                                        foreach ($repeaterItems as $item) {
+                                            if (isset($item['brand_id']) && $item['brand_id'] == $brandId) {
+                                                $totalQuantity += $item['quantity'] ?? 0;
+                                            }
+                                        }
+
+                                        if ($totalQuantity > $balance) {
+                                            $fail("Total quantity for this brand exceeds available balance ({$balance} Kg).");
+                                        }
+                                    }
+                                ];
+                            })
+                            ->helperText(function ($get) {
+                                $brandId = $get('brand_id');
+                                $supplierId = $get('../../supplier_id');
+
+                                if (!$brandId || !$supplierId)
+                                    return '';
+
+                                $balance = TwisterInventory::where('twister_id', $supplierId)
+                                    ->where('brand_id', $brandId)
+                                    ->sum(DB::raw('credit - debit'));
+
+                                return "Available: {$balance} Kg";
+                            })
+                            ->minValue(0)
+                            ->step(0.01)
+                            ->required(),
+
+                        Textarea::make('remarks')
+                            ->label('Remarks')
+                            ->rows(2)
+                            ->maxLength(255),
+                    ])
+                    ->afterStateUpdated(function () {
+                    })
+                    ->columnSpanFull()
+                    ->columns(3),
+
+                Textarea::make('remarks')
+                    ->label('Remarks')
+                    ->nullable()
+                    ->columnSpanFull()
+                    ->rows(3),
             ]),
         ];
     }
