@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Purchase\DeliveryOrder;
 use App\Models\Inventory\TwisterInventory;
 use App\Models\Purchase\GoodsReceivedNote;
+use App\Models\Inventory\RawMaterialInventory;
 
 class TwisterInventoryService
 {
@@ -154,6 +155,25 @@ class TwisterInventoryService
                         'balance' => $newBalance,
                         'remarks' => "Yarn Received from Twister {$grn->supplier->name} via GRN {$grn->grn_number}",
                         'goods_received_note_id' => $grn->id,
+                    ]);
+
+                    // 🧩 RawMaterialInventory update (mirror)
+                    $currentMaterialBalance = RawMaterialInventory::where('raw_material_id', $grn->raw_material_id)
+                        ->where('brand_id', $brandId)
+                        ->sum(DB::raw('in_qty - out_qty'));
+
+                    $newMaterialBalance = $currentMaterialBalance + $quantity;
+
+                    RawMaterialInventory::create([
+                        'date' => $grn->challan_date,
+                        'raw_material_id' => $grn->raw_material_id,
+                        'brand_id' => $brandId,
+                        'in_qty' => $quantity,
+                        'out_qty' => 0,
+                        'balance' => $newMaterialBalance,
+                        'reference_type' => GoodsReceivedNote::class,
+                        'reference_id' => $grn->id,
+                        'remarks' => "Received from Twister {$grn->supplier->name} via GRN {$grn->grn_number}",
                     ]);
                 }
             }

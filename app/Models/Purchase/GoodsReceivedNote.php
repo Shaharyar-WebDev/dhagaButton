@@ -6,9 +6,11 @@ use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Inventory\TwisterInventory;
-use App\Models\Purchase\GoodsReceivedNoteItem;
 use App\Services\TwisterInventoryService;
+use App\Models\Inventory\TwisterInventory;
+use App\Services\RawMaterialInventoryService;
+use App\Models\Inventory\RawMaterialInventory;
+use App\Models\Purchase\GoodsReceivedNoteItem;
 
 class GoodsReceivedNote extends Model
 {
@@ -20,6 +22,7 @@ class GoodsReceivedNote extends Model
         'challan_date',
         'raw_material_id',
         'remarks',
+        'locked'
     ];
 
 
@@ -79,6 +82,13 @@ class GoodsReceivedNote extends Model
         return $this->items->sum(fn($item) => $item->received_quantity);
     }
 
+    public function lock()
+    {
+        if (!$this->locked) {
+            $this->updateQuietly(['locked' => true]);
+        }
+    }
+
     protected static function booted()
     {
         static::creating(function ($grn) {
@@ -88,7 +98,11 @@ class GoodsReceivedNote extends Model
         });
 
         static::saved(function ($grn) {
-            TwisterInventoryService::recordGrn($grn);
+            if ($grn->purchase_order_id) {
+                RawMaterialInventoryService::recordGrn($grn);
+            } else {
+                TwisterInventoryService::recordGrn($grn);
+            }
         });
     }
 }

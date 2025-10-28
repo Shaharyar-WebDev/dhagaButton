@@ -57,6 +57,11 @@ class PurchaseOrder extends Model
         return $this->hasMany(DeliveryOrder::class);
     }
 
+    public function verifiedGoodsReceivedNotes()
+    {
+        return $this->hasMany(GoodsReceivedNote::class)
+            ->where('status', 'verified');
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -68,6 +73,16 @@ class PurchaseOrder extends Model
     {
         return $this->verifiedDeliveryOrders()->sum('quantity');
     }
+
+    public function getVerifiedGrnQuantityAttribute()
+    {
+        return $this->verifiedGoodsReceivedNotes()
+            ->with('items')
+            ->get()
+            ->flatMap(fn($grn) => $grn->items)
+            ->sum('quantity');
+    }
+
 
     public static function generatePoNumber(): string
     {
@@ -96,11 +111,19 @@ class PurchaseOrder extends Model
         // total quantity ordered
         $orderedQty = $this->ordered_quantity ?? 0;
 
-        // sum of all quantities received in delivery orders
-        $receivedQty = $this
-            // ->deliveryOrders()
-            ->verifiedDeliveryOrders()
-            ->sum('quantity');
+        if ($this->rawMaterial?->type?->name === 'twisted_yarn') {
+            $receivedQty = $this->verifiedGoodsReceivedNotes()
+                ->with('items')
+                ->get()
+                ->flatMap(fn($grn) => $grn->items)
+                ->sum('quantity');
+        } else {
+            // sum of all quantities received in delivery orders
+            $receivedQty = $this
+                // ->deliveryOrders()
+                ->verifiedDeliveryOrders()
+                ->sum('quantity');
+        }
 
         // remaining
         return $orderedQty - $receivedQty;
@@ -111,13 +134,42 @@ class PurchaseOrder extends Model
         return $this->deliveryOrders()->sum('quantity');
     }
 
-    public function hasRemainingQty(): bool
+    public function hasRemainingDoQty(): bool
     {
         $orderedQty = $this->ordered_quantity ?? 0;
 
         $receivedQty = $this->deliveryOrders()->sum('quantity');
 
         return $receivedQty < $orderedQty;
+    }
+
+    public function hasRemainingGrnQty(): bool
+    {
+        $orderedQty = $this->ordered_quantity ?? 0;
+
+        $receivedQty = $this->verifiedGoodsReceivedNotes()
+            ->with('items')
+            ->get()
+            ->flatMap(fn($grn) => $grn->items)
+            ->sum('quantity');
+
+        return $receivedQty < $orderedQty;
+    }
+
+
+    // public function canCreateGrn()
+    // {
+    //     dd (in_array($this->rawMaterial?->type, ['yarn', 'yarns']));
+    //     // {
+    //     //     return true;
+    //     // }
+
+    //     return false;
+    // }
+
+    public function canCreateDo()
+    {
+        return in_array($this->rawMaterial?->type, ['yarn', 'yarns']);
     }
 
 

@@ -33,7 +33,11 @@ class GoodsReceivedNoteForm
                 $reqPoId = request()->query('purchase_order_id');
                 $set('purchase_order_id', $reqPoId);
                 $set('request_po_id', $reqPoId);
+                $po = PurchaseOrder::find($reqPoId);
                 // $poId = $reqPoId;
+                $set('raw_material_id', $po->raw_material_id);
+                $set('supplier_id', $po->supplier_id);
+
 
             } else if (request()->has('delivery_order_id')) {
                 $reqDoId = request()->query('delivery_order_id');
@@ -84,7 +88,6 @@ class GoodsReceivedNoteForm
             Section::make()->columnSpanFull()->columns(2)->schema([
                 Grid::make(3)->columnSpanFull()->schema([
 
-
                     Select::make('raw_material_id')
                         ->label('Raw Material')
                         ->relationship('rawMaterial', 'name')
@@ -106,6 +109,8 @@ class GoodsReceivedNoteForm
                         })
                         ->reactive()
                         ->searchable()
+                        ->disabled(fn($get) => $get('request_po_id'))
+                        ->dehydrated()
                         ->preload()
                         ->required(),
 
@@ -114,15 +119,20 @@ class GoodsReceivedNoteForm
                         ->relationship('supplier', 'name')
                         ->preload()
                         ->reactive()
+                        ->disabled(fn($get) => $get('request_po_id'))
                         ->searchable()
+                        ->dehydrated()
                         ->required(),
 
                     Select::make('purchase_order_id')
                         ->label('Purchase Order')
-                        ->disabled(fn($get) => $get('request_do_id'))
+                        // ->disabled(fn($get) => $get('request_do_id'))
+                        ->disabled(true)
                         ->afterStateHydrated(fn($state, $set) => self::updateFields($state, $set))
                         ->afterStateUpdated(fn($state, $set) => self::updateFields($state, $set))
                         ->relationship('purchaseOrder', 'po_number')
+                        ->preload()
+                        ->dehydrated()
                         ->searchable()
                         ->nullable(),
 
@@ -152,7 +162,7 @@ class GoodsReceivedNoteForm
 
                         if ($get('raw_material_id') && RawMaterial::find($get('raw_material_id'))?->type?->name == 'twisted_yarn') {
 
-                            if ($get('is_purchasing')) {
+                            if ($get('purchase_order_id')) {
                                 return false;
                             } else {
                                 return true;
@@ -174,7 +184,24 @@ class GoodsReceivedNoteForm
                         Select::make('brand_id')
                             ->label('Brand')
                             ->reactive()
-                            ->relationship('brand', 'name')
+                            ->options(function ($get) {
+                                $purchaseOrderId = $get('../../purchase_order_id');
+
+                                $purchaseOrderId = $get('../../purchase_order_id');
+
+                                if (!$purchaseOrderId) {
+                                    return Brand::pluck('name', 'id');
+                                }
+
+                                $po = PurchaseOrder::find($purchaseOrderId);
+
+                                if (!$po || !$po->brand_id) {
+                                    return [];
+                                }
+
+                                return Brand::where('id', $po->brand_id)->pluck('name', 'id');
+                            })
+                            // ->relationship('brand', 'name')
                             ->required(),
 
                         TextInput::make('quantity')
@@ -182,46 +209,116 @@ class GoodsReceivedNoteForm
                             ->numeric()
                             ->suffix(fn($get) => $get('../../unit_name'))
                             ->rules(function ($get) {
-                                return [
-                                    function ($attribute, $value, $fail) use ($get) {
-                                        $brandId = $get('brand_id');
-                                        $supplierId = $get('../../supplier_id');
 
-                                        if (!$brandId || !$supplierId)
-                                            return;
+                                $isPurchasing = $get('../../purchase_order_id');
 
-                                        // Get total available balance for the brand
-                                        $balance = TwisterInventory::where('twister_id', $supplierId)
-                                            ->where('brand_id', $brandId)
-                                            ->sum(DB::raw('credit - debit'));
+                                $isUpdating = filled($get('../../id'));
 
-                                        // Sum all quantities entered in repeater for this brand
-                                        $repeaterItems = $get('../../items');
-                                        $totalQuantity = 0;
-                                        foreach ($repeaterItems as $item) {
-                                            if (isset($item['brand_id']) && $item['brand_id'] == $brandId) {
-                                                $totalQuantity += $item['quantity'] ?? 0;
+                                if ($isUpdating) {
+                                    return []; // skip validation on edit
+                                }
+
+                                if ($isPurchasing) {
+                                    return [
+                                        function ($attribute, $value, $fail) use ($get) {
+                                            $purchaseOrderId = $get('../../purchase_order_id');
+                                            $po = PurchaseOrder::find($purchaseOrderId);
+
+                                            if (!$po) {
+                                                return;
+                                            }
+
+                                            $orderedQty = $po->ordered_quantity ?? 0;
+
+                                            // Total quantity already received (verified GRNs)
+                                            $alreadyReceivedQty = $po->verifiedGoodsReceivedNotes()
+                                                ->withSum('items', 'quantity')
+                                                ->get()
+                                                ->pluck('items_sum_quantity')
+                                                ->sum();
+
+                                            $remainingQty = max($orderedQty - $alreadyReceivedQty, 0);
+
+                                            $unit = $po->rawMaterial?->unit?->symbol ?? '';
+
+                                            // Now also sum up quantities being entered in *this repeater*
+                                            $repeaterItems = $get('../../items') ?? [];
+                                            $totalEnteredQty = 0;
+                                            foreach ($repeaterItems as $item) {
+                                                $totalEnteredQty += $item['quantity'] ?? 0;
+                                            }
+
+                                            if ($totalEnteredQty > $remainingQty) {
+                                                $fail("Total entered quantity ({$totalEnteredQty} {$unit}) exceeds remaining order quantity ({$remainingQty} {$unit}).");
                                             }
                                         }
+                                    ];
+                                } else {
+                                    return [
+                                        function ($attribute, $value, $fail) use ($get) {
+                                            $brandId = $get('brand_id');
+                                            $supplierId = $get('../../supplier_id');
 
-                                        if ($totalQuantity > $balance) {
-                                            $fail("Total quantity for this brand exceeds available balance ({$balance} Kg).");
+                                            if (!$brandId || !$supplierId)
+                                                return;
+
+                                            // Get total available balance for the brand
+                                            $balance = TwisterInventory::where('twister_id', $supplierId)
+                                                ->where('brand_id', $brandId)
+                                                ->sum(DB::raw('credit - debit'));
+
+                                            // Sum all quantities entered in repeater for this brand
+                                            $repeaterItems = $get('../../items');
+                                            $totalQuantity = 0;
+                                            foreach ($repeaterItems as $item) {
+                                                if (isset($item['brand_id']) && $item['brand_id'] == $brandId) {
+                                                    $totalQuantity += $item['quantity'] ?? 0;
+                                                }
+                                            }
+
+                                            if ($totalQuantity > $balance) {
+                                                $fail("Total quantity for this brand exceeds available balance ({$balance} Kg).");
+                                            }
                                         }
-                                    }
-                                ];
+                                    ];
+                                }
                             })
                             ->helperText(function ($get) {
-                                $brandId = $get('brand_id');
-                                $supplierId = $get('../../supplier_id');
+                                $isPurchasing = $get('../../purchase_order_id');
 
-                                if (!$brandId || !$supplierId)
-                                    return '';
+                                if ($isPurchasing) {
+                                    $po = PurchaseOrder::find($isPurchasing);
 
-                                $balance = TwisterInventory::where('twister_id', $supplierId)
-                                    ->where('brand_id', $brandId)
-                                    ->sum(DB::raw('credit - debit'));
+                                    if ($po) {
+                                        $orderedQty = $po->ordered_quantity ?? 0;
+                                        $unit = $po->rawMaterial?->unit?->symbol ?? '';
 
-                                return "Available: {$balance} Kg";
+                                        $alreadyReceivedQty = $po->verifiedGoodsReceivedNotes()
+                                            ->withSum('items', 'quantity') // efficient sum in DB
+                                            ->get()
+                                            ->pluck('items_sum_quantity')
+                                            ->sum();
+
+                                        $remainingQty = max($orderedQty - $alreadyReceivedQty, 0);
+
+                                        // Format only for display
+                                        $formattedRemaining = number_format($remainingQty, 3);
+
+                                        return "Quantity To Receive: {$formattedRemaining} {$unit}";
+                                    }
+                                } else {
+                                    $brandId = $get('brand_id');
+                                    $supplierId = $get('../../supplier_id');
+
+                                    if (!$brandId || !$supplierId)
+                                        return '';
+
+                                    $balance = TwisterInventory::where('twister_id', $supplierId)
+                                        ->where('brand_id', $brandId)
+                                        ->sum(DB::raw('credit - debit'));
+
+                                    return "Available: {$balance} Kg";
+                                }
                             })
                             ->minValue(0)
                             ->step(0.01)

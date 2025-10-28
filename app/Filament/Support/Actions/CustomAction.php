@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 
 class CustomAction
 {
@@ -36,12 +37,40 @@ class CustomAction
         return Action::make('create_delivery_order')
             ->label('Create Delivery order')
             ->color('info')
-            ->visible(fn($record) => $record->hasRemainingQty())
+            // ->visible(
+            //     fn($record) =>
+            //     $record->canCreateDo()
+            //     &&
+            //     $record->hasRemainingDoQty()
+            // )
             ->icon(DeliveryOrderResource::getNavigationIcon())
             ->action(function ($record, $data, $livewire) {
                 // Redirect to the Stock Transpufer Record resource creation page
                 $livewire->redirect(
                     DeliveryOrderResource::getUrl('create', [
+                        'purchase_order_id' => $record->id,
+                    ]),
+                    navigate: spa_mode()
+                );
+            });
+    }
+
+    public static function createGoodReceivedNote()
+    {
+        return Action::make('create_grn')
+            ->label('Create Goods Received Note')
+            ->color('success')
+            // ->visible(
+            //     fn($record) =>
+            //     !$record->canCreateDo()
+            //     &&
+            //     $record->hasRemainingGrnQty()
+            // )
+            ->icon(GoodsReceivedNoteResource::getNavigationIcon())
+            ->action(function ($record, $data, $livewire) {
+                // Redirect to the Stock Transpufer Record resource creation page
+                $livewire->redirect(
+                    GoodsReceivedNoteResource::getUrl('create', [
                         'purchase_order_id' => $record->id,
                     ]),
                     navigate: spa_mode()

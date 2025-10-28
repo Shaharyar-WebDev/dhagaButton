@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->foreignId('brand_id')->nullable()->constrained();
             $table->foreignId('raw_material_id')->constrained();
             $table->decimal('ordered_quantity', 12, 2);
-            $table->decimal('rate', 12, 2)->nullable();
-            $table->decimal('total_amount', 12, 2)->nullable();
+            $table->decimal('rate', 12, 3)->nullable();
+            $table->decimal('total_amount', 12, 3)->nullable();
             $table->enum('status', ['draft', 'pending', 'partially_received', 'completed', 'cancelled'])->default('pending');
             $table->text('remarks')->nullable();
             $table->date('expected_delivery_date');

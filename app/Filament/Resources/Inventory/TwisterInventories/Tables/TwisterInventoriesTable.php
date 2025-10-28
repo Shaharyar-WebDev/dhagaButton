@@ -114,17 +114,17 @@ class TwisterInventoriesTable
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('debit')
-                    ->label('Debit')
+                TextColumn::make('credit')
+                    ->label('Issue')
                     ->numeric(2)
-                    ->color('success')
+                    ->color('danger')
                     ->alignRight()
                     ->sortable(),
 
-                TextColumn::make('credit')
-                    ->label('Credit')
+                TextColumn::make('debit')
+                    ->label('Receive')
                     ->numeric(2)
-                    ->color('danger')
+                    ->color('success')
                     ->alignRight()
                     ->sortable(),
 

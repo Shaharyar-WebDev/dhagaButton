@@ -142,17 +142,15 @@ class PurchaseOrderForm
                                 }
                             }),
 
-
-
                         TextInput::make('rate')
                             ->label('Rate per Unit')
                             ->numeric()
                             ->prefix('PKR')
-                            ->step('1')
+                            // ->step('0')
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 $qty = (float) $get('ordered_quantity') ?? 0;
-                                $set('total_amount', $qty * $state);
+                                $set('total_amount', round($qty * $state));
                             })
                             ->helperText('Agreed purchase rate per unit.'),
 

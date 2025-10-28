@@ -1,6 +1,9 @@
 <?php return array (
   'livewireComponents' => 
   array (
+    'app.filament.resources.inventory.raw-material-inventories.pages.create-raw-material-inventory' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\Pages\\CreateRawMaterialInventory',
+    'app.filament.resources.inventory.raw-material-inventories.pages.edit-raw-material-inventory' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\Pages\\EditRawMaterialInventory',
+    'app.filament.resources.inventory.raw-material-inventories.pages.list-raw-material-inventories' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\Pages\\ListRawMaterialInventories',
     'app.filament.resources.inventory.twister-inventories.pages.create-twister-inventory' => 'App\\Filament\\Resources\\Inventory\\TwisterInventories\\Pages\\CreateTwisterInventory',
     'app.filament.resources.inventory.twister-inventories.pages.edit-twister-inventory' => 'App\\Filament\\Resources\\Inventory\\TwisterInventories\\Pages\\EditTwisterInventory',
     'app.filament.resources.inventory.twister-inventories.pages.list-twister-inventories' => 'App\\Filament\\Resources\\Inventory\\TwisterInventories\\Pages\\ListTwisterInventories',
@@ -72,6 +75,7 @@
   ),
   'resources' => 
   array (
+    'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\RawMaterialInventories\\RawMaterialInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\RawMaterialInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\TwisterInventories\\TwisterInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\TwisterInventories\\TwisterInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Master\\Brands\\BrandResource.php' => 'App\\Filament\\Resources\\Master\\Brands\\BrandResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Master\\RawMaterials\\RawMaterialResource.php' => 'App\\Filament\\Resources\\Master\\RawMaterials\\RawMaterialResource',

@@ -42,32 +42,52 @@ class PurchaseOrdersTable
                     ->searchable()
                     ->toggleable(),
 
+                TextColumn::make('brand.name')
+                    ->label('Brand')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(),
+
                 TextColumn::make('ordered_quantity')
                     ->label('Ordered Quantity')
                     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? ''))
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('delivery_orders_sum_quantity ')
-                    ->label('Received DO Quantity')
-                    // ->sortable()
-                    ->placeholder('-')
-                    ->getStateUsing(fn($record) => $record->verified_delivery_orders_sum_quantity)
-                    ->toggleable()
-                    ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
+                // TextColumn::make('delivery_orders_sum_quantity ')
+                //     ->label('Received DO Quantity')
+                //     // ->sortable()
+                //     ->placeholder('-')
+                //     ->getStateUsing(fn($record) => $record->verified_delivery_orders_sum_quantity)
+                //     ->toggleable()
+                //     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
 
-                TextColumn::make('available_quantity_to_receive')
-                    ->label('Quantity To Receive')
-                    // ->sortable()
-                    ->numeric(2)
-                    ->getStateUsing(fn($record) => $record->remainingQtyToReceive())
+                TextColumn::make('received_quantity')
+                    ->label('Received Quantity')
+                    ->getStateUsing(
+                        fn($record) =>
+                        in_array($record->rawMaterial?->type?->name, ['yarns', 'yarn'])
+                        ? $record->verified_delivery_orders_sum_quantity
+                        : $record->verified_grn_quantity
+                    )
+                    ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? ''))
                     ->toggleable()
-                    ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
+                    ->numeric(2)
+                    ->placeholder('-'),
+
+                // TextColumn::make('available_quantity_to_receive')
+                //     ->label('Quantity To Receive')
+                //     // ->sortable()
+                //     ->numeric(2)
+                //     ->getStateUsing(fn($record) => $record->remainingQtyToReceive())
+                //     ->toggleable()
+                //     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
 
                 TextColumn::make('rate')
                     ->label('Rate per Unit')
                     ->money('PKR', true)
                     ->sortable()
+                    ->numeric(3)
                     ->toggleable(),
 
                 TextColumn::make('total_amount')
@@ -162,6 +182,7 @@ class PurchaseOrdersTable
                 ActionGroup::make([
                     ViewAction::make(),
                     CustomAction::createDeliveryOrder(),
+                    CustomAction::createGoodReceivedNote(),
                     EditAction::make(),
                 ]),
             ])
