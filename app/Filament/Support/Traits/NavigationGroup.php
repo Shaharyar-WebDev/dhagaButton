@@ -2,11 +2,9 @@
 
 namespace App\Filament\Support\Traits;
 
-use App\Filament\Resources\Inventory\RawMaterialInventories\RawMaterialInventoryResource;
-use App\Filament\Resources\Inventory\TwisterInventories\TwisterInventoryResource;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
-use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordResource;
+use App\Filament\Resources\Accounting\SupplierLedgers\SupplierLedgerResource;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Purchase\GoodsReceivedNote;
 use App\Models\Purchase\StockTransferRecord;
 use App\Filament\Resources\Master\Units\UnitResource;
 use App\Filament\Resources\Master\Brands\BrandResource;
@@ -14,7 +12,11 @@ use App\Filament\Resources\Master\Suppliers\SupplierResource;
 use App\Filament\Resources\Master\RawMaterials\RawMaterialResource;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
-use App\Models\Purchase\GoodsReceivedNote;
+use App\Filament\Resources\Inventory\DyerInventories\DyerInventoryResource;
+use App\Filament\Resources\Inventory\TwisterInventories\TwisterInventoryResource;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
+use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordResource;
+use App\Filament\Resources\Inventory\RawMaterialInventories\RawMaterialInventoryResource;
 
 trait NavigationGroup
 {
@@ -39,8 +41,12 @@ trait NavigationGroup
             ],
             'Stock Management' => [
                 RawMaterialInventoryResource::class,
-                TwisterInventoryResource::class
+                TwisterInventoryResource::class,
+                DyerInventoryResource::class
             ],
+            'Accounting' => [
+                SupplierLedgerResource::class
+            ]
         ];
     }
 
@@ -53,6 +59,7 @@ trait NavigationGroup
                 'Master',
                 'Purchase',
                 'Stock Management',
+                'Accounting',
                 'Settings'
             ];
         });

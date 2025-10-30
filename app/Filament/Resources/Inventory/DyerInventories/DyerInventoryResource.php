@@ -2,23 +2,25 @@
 
 namespace App\Filament\Resources\Inventory\DyerInventories;
 
-use App\Filament\Resources\Inventory\DyerInventories\Pages\CreateDyerInventory;
-use App\Filament\Resources\Inventory\DyerInventories\Pages\EditDyerInventory;
-use App\Filament\Resources\Inventory\DyerInventories\Pages\ListDyerInventories;
-use App\Filament\Resources\Inventory\DyerInventories\Pages\ViewDyerInventory;
-use App\Filament\Resources\Inventory\DyerInventories\Schemas\DyerInventoryForm;
-use App\Filament\Resources\Inventory\DyerInventories\Schemas\DyerInventoryInfolist;
-use App\Filament\Resources\Inventory\DyerInventories\Tables\DyerInventoriesTable;
-use App\Filament\Support\Traits\ReadOnlyResource;
-use App\Models\Inventory\DyerInventory;
 use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use App\Models\Inventory\DyerInventory;
+use App\Filament\Support\Traits\NavigationGroup;
+use App\Filament\Support\Traits\ReadOnlyResource;
+use App\Filament\Resources\Inventory\DyerInventories\Pages\EditDyerInventory;
+use App\Filament\Resources\Inventory\DyerInventories\Pages\ViewDyerInventory;
+use App\Filament\Resources\Inventory\DyerInventories\Pages\CreateDyerInventory;
+use App\Filament\Resources\Inventory\DyerInventories\Pages\ListDyerInventories;
+use App\Filament\Resources\Inventory\DyerInventories\Schemas\DyerInventoryForm;
+use App\Filament\Resources\Inventory\DyerInventories\Tables\DyerInventoriesTable;
+use App\Filament\Resources\Inventory\DyerInventories\Schemas\DyerInventoryInfolist;
 
 class DyerInventoryResource extends Resource
 {
+    use NavigationGroup;
     use ReadOnlyResource;
     protected static ?string $model = DyerInventory::class;
 

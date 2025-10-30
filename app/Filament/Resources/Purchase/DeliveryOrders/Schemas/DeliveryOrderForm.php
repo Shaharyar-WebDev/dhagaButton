@@ -181,10 +181,9 @@ class DeliveryOrderForm
 
                                 FileUpload::make('attachments')
                                     ->label('Attachments')
-                                    ->directory('delivery-orders')
                                     ->multiple()
                                     // ->image()
-                                    ->directory('images/delivery-orders/')
+                                    ->directory('images/delivery-orders')
                                     ->disk('public')
                                     ->visibility('public')
                                     ->deleteUploadedFileUsing(function ($file) {

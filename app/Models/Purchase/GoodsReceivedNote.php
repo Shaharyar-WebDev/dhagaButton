@@ -6,6 +6,7 @@ use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Accounting\SupplierLedger;
 use App\Services\TwisterInventoryService;
 use App\Models\Inventory\TwisterInventory;
 use App\Services\RawMaterialInventoryService;
@@ -22,7 +23,12 @@ class GoodsReceivedNote extends Model
         'challan_date',
         'raw_material_id',
         'remarks',
+        'attachments',
         'locked'
+    ];
+
+    protected $casts = [
+        'attachments' => 'array',
     ];
 
 
@@ -104,5 +110,12 @@ class GoodsReceivedNote extends Model
                 TwisterInventoryService::recordGrn($grn);
             }
         });
+
+        static::deleted(function ($grn) {
+            SupplierLedger::where('source_type', get_class($grn))
+                ->where('source_id', $grn->id)
+                ->delete();
+        });
+
     }
 }

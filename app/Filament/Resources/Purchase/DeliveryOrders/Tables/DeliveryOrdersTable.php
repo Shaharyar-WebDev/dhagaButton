@@ -150,31 +150,7 @@ class DeliveryOrdersTable
                     ViewAction::make(),
                     EditAction::make(),
                     CustomAction::verifyStatus(),
-                    Action::make('view_attachments')
-                        ->icon('heroicon-o-photo')
-                        ->color('info')
-                        ->schema([
-                            FileUpload::make('attachments')
-                                ->label('Attachments')
-                                ->directory('images/delivery-orders')
-                                ->disk('public')
-                                ->visibility('public')
-                                // ->multiple()
-                                ->openable()
-                                ->downloadable()
-                                // ->placeholder(null)
-                                ->previewable()
-                                ->disabled()
-                                ->deletable(false)
-                                ->dehydrated(false),
-                        ])
-                        ->mountUsing(function ($form, $record) {
-                            $attachments = $record->attachments ?? [];
-
-                            $form->fill(['attachments' => $attachments]);
-                        })
-                        ->modalSubmitAction(false)
-                        ->modalWidth('3xl'),
+                    CustomAction::viewAttachments('images/delivery-orders')
                 ]),
             ])
             ->toolbarActions([

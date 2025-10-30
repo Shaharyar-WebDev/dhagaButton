@@ -1,6 +1,10 @@
 <?php return array (
   'livewireComponents' => 
   array (
+    'app.filament.resources.accounting.supplier-ledgers.pages.create-supplier-ledger' => 'App\\Filament\\Resources\\Accounting\\SupplierLedgers\\Pages\\CreateSupplierLedger',
+    'app.filament.resources.accounting.supplier-ledgers.pages.edit-supplier-ledger' => 'App\\Filament\\Resources\\Accounting\\SupplierLedgers\\Pages\\EditSupplierLedger',
+    'app.filament.resources.accounting.supplier-ledgers.pages.list-supplier-ledgers' => 'App\\Filament\\Resources\\Accounting\\SupplierLedgers\\Pages\\ListSupplierLedgers',
+    'app.filament.resources.accounting.supplier-ledgers.pages.view-supplier-ledger' => 'App\\Filament\\Resources\\Accounting\\SupplierLedgers\\Pages\\ViewSupplierLedger',
     'app.filament.resources.inventory.dyer-inventories.pages.create-dyer-inventory' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\CreateDyerInventory',
     'app.filament.resources.inventory.dyer-inventories.pages.edit-dyer-inventory' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\EditDyerInventory',
     'app.filament.resources.inventory.dyer-inventories.pages.list-dyer-inventories' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\ListDyerInventories',
@@ -82,6 +86,7 @@
   ),
   'resources' => 
   array (
+    'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Accounting\\SupplierLedgers\\SupplierLedgerResource.php' => 'App\\Filament\\Resources\\Accounting\\SupplierLedgers\\SupplierLedgerResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\DyerInventories\\DyerInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\DyerInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\RawMaterialInventories\\RawMaterialInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\RawMaterialInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\TwisterInventories\\TwisterInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\TwisterInventories\\TwisterInventoryResource',

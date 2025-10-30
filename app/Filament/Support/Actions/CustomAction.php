@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordResource;
@@ -138,5 +139,35 @@ class CustomAction
             })
             ->color('info')
             ->icon('heroicon-o-lock-open');
+    }
+
+    public static function viewAttachments($imagePath)
+    {
+        return Action::make('view_attachments')
+            ->icon('heroicon-o-photo')
+            ->color('info')
+            ->schema([
+                FileUpload::make('attachments')
+                    ->label('Attachments')
+                    ->directory($imagePath)
+                    ->disk('public')
+                    ->visibility('public')
+                    // ->multiple()
+                    ->openable()
+                    ->downloadable()
+                    // ->placeholder(null)
+                    ->previewable()
+                    ->disabled()
+                    ->deletable(false)
+                    ->dehydrated(false),
+            ])
+            ->slideOver()
+            ->mountUsing(function ($form, $record) {
+                $attachments = $record->attachments ?? [];
+
+                $form->fill(['attachments' => $attachments]);
+            })
+            ->modalSubmitAction(false)
+            ->modalWidth('3xl');
     }
 }

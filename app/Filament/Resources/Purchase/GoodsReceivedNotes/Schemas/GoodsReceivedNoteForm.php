@@ -13,11 +13,13 @@ use App\Models\Purchase\DeliveryOrder;
 use App\Models\Purchase\PurchaseOrder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use App\Services\TwisterInventoryService;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use App\Models\Inventory\TwisterInventory;
 use Filament\Forms\Components\Placeholder;
 use Filament\Infolists\Components\TextEntry;
@@ -187,24 +189,24 @@ class GoodsReceivedNoteForm
                         Select::make('brand_id')
                             ->label('Brand')
                             ->reactive()
-                            ->options(function ($get) {
-                                $purchaseOrderId = $get('../../purchase_order_id');
+                            // ->options(function ($get) {
+                            //     $purchaseOrderId = $get('../../purchase_order_id');
 
-                                $purchaseOrderId = $get('../../purchase_order_id');
+                            //     $purchaseOrderId = $get('../../purchase_order_id');
 
-                                if (!$purchaseOrderId) {
-                                    return Brand::pluck('name', 'id');
-                                }
+                            //     if (!$purchaseOrderId) {
+                            //         return Brand::pluck('name', 'id');
+                            //     }
 
-                                $po = PurchaseOrder::find($purchaseOrderId);
+                            //     $po = PurchaseOrder::find($purchaseOrderId);
 
-                                if (!$po || !$po->brand_id) {
-                                    return [];
-                                }
+                            //     if (!$po || !$po->brand_id) {
+                            //         return [];
+                            //     }
 
-                                return Brand::where('id', $po->brand_id)->pluck('name', 'id');
-                            })
-                            // ->relationship('brand', 'name')
+                            //     return Brand::where('id', $po->brand_id)->pluck('name', 'id');
+                            // })
+                            ->relationship('brand', 'name')
                             ->required(),
 
                         TextInput::make('quantity')
@@ -342,6 +344,23 @@ class GoodsReceivedNoteForm
                     ->nullable()
                     ->columnSpanFull()
                     ->rows(3),
+
+                FileUpload::make('attachments')
+                    ->label('Attachments')
+                    ->multiple()
+                    // ->image()
+                    ->directory('images/good-received-notes')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->deleteUploadedFileUsing(function ($file) {
+                        Storage::disk('public')->delete($file);
+                    })
+                    ->nullable()
+                    ->downloadable()
+                    ->columnSpanFull()
+                    // ->helperText('Optional: Upload scanned challan or image proof.')
+                    // ->maxSize(2048)
+                    ->openable(),
             ]),
         ];
     }
@@ -351,4 +370,5 @@ class GoodsReceivedNoteForm
         return $schema
             ->components(self::getForm());
     }
+
 }

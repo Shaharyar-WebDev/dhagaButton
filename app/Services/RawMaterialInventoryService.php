@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use App\Services\SupplierLedgerService;
 use App\Models\Purchase\GoodsReceivedNote;
 use App\Models\Inventory\RawMaterialInventory;
 
@@ -43,6 +44,7 @@ class RawMaterialInventoryService
                         'remarks' => $item->remarks,
                     ]);
                 }
+                SupplierLedgerService::recordGrn($grn);
                 $grn->lock();
             }
         });

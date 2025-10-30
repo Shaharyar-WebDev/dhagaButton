@@ -24,41 +24,48 @@ class GoodsReceivedNotesTable
                 TextColumn::make('grn_number')
                     ->label('GRN Number')
                     ->sortable()
+                    ->toggleable()
                     ->placeholder('---')
                     ->searchable(),
 
                 TextColumn::make('rawMaterial.name')
                     ->label('Raw Material')
                     ->sortable()
+                    ->toggleable()
                     ->placeholder('---')
                     ->searchable(),
 
                 TextColumn::make('supplier.name')
                     ->label('Supplier')
                     ->sortable()
+                    ->toggleable()
                     ->placeholder('---')
                     ->searchable(),
 
                 TextColumn::make('purchaseOrder.po_number')
                     ->label('Purchase Order')
                     ->sortable()
+                    ->toggleable()
                     ->placeholder('---')
                     ->searchable(),
 
                 TextColumn::make('challan_no')
                     ->label('Challan No')
                     ->sortable()
+                    ->toggleable()
                     ->placeholder('---')
                     ->searchable(),
 
                 TextColumn::make('challan_date')
                     ->label('Challan Date')
                     ->date()
+                    ->toggleable()
                     ->placeholder('---')
                     ->sortable(),
 
                 TextColumn::make('remarks')
                     ->label('Remarks')
+                    ->toggleable()
                     ->placeholder('---')
                     ->limit(50),
 
@@ -101,6 +108,7 @@ class GoodsReceivedNotesTable
                     ViewAction::make(),
                     EditAction::make(),
                     CustomAction::verifyStatus(),
+                    CustomAction::viewAttachments('images/good-received-notes')
                 ]),
             ])
             ->toolbarActions([

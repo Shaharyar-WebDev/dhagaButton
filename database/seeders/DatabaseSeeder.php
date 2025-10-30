@@ -48,6 +48,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RawMaterialTypeSeeder::class,
+            UnitSeeder::class,
+            RawMaterialSeeder::class
         ]);
     }
 }

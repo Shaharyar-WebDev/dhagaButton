@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->enum('status', ['draft', 'verified']);
             $table->boolean('locked')->default(false);
             $table->text('remarks')->nullable();
+            $table->json('attachments')->nullable();
             $table->timestamps();
         });
 

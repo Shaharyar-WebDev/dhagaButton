@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Inventory\TwisterInventories\Tables;
 
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
