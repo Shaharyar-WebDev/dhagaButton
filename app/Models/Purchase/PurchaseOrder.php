@@ -169,7 +169,7 @@ class PurchaseOrder extends Model
 
     public function canCreateDo()
     {
-        return in_array($this->rawMaterial?->type, ['yarn', 'yarns']);
+        return in_array($this->rawMaterial?->type->name, ['yarn', 'yarns']);
     }
 
 

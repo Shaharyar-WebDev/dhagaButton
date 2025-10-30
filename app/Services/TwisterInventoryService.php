@@ -46,8 +46,8 @@ class TwisterInventoryService
                 'purchase_order_id' => $do->purchase_order_id,
                 'raw_material_id' => $do->raw_material_id,
                 'brand_id' => $do->brand_id,
-                'debit' => 0,
-                'credit' => $do->quantity,
+                'issue' => $do->quantity,
+                'receive' => 0,
                 'balance' => $newBalance,
                 'remarks' => "Yarn sent to Twister via DO {$do->do_number}",
             ]);
@@ -90,14 +90,14 @@ class TwisterInventoryService
     public static function getBalancesByTwisterAndBrand(): array
     {
         return TwisterInventory::select('twister_id', 'brand_id')
-            ->selectRaw('SUM(credit) as total_credit, SUM(debit) as total_debit')
+            ->selectRaw('SUM(issue) as total_issue, SUM(receive) as total_receive')
             ->groupBy('twister_id', 'brand_id')
             ->with(['twister:id,name', 'brand:id,name'])
             ->get()
-            ->filter(fn($item) => ($item->total_credit - $item->total_debit) != 0)
+            ->filter(fn($item) => ($item->total_issue - $item->total_receive) != 0)
             ->mapToGroups(fn($item) => [
                 $item->twister->name => [
-                    $item->brand->name => $item->total_credit - $item->total_debit
+                    $item->brand->name => $item->total_issue - $item->total_receive
                 ]
             ])
             ->mapWithKeys(fn($item, $key) => [$key => $item->collapse()])
@@ -122,60 +122,63 @@ class TwisterInventoryService
                         ];
                     })->values();
 
-                foreach ($normalizedItems as $item) {
-                    $brandId = $item['brand_id'];
-                    $twisterId = $grn->supplier_id;
-                    $quantity = $item['quantity'];
+                DB::transaction(function () use ($normalizedItems, $grn) {
+                    foreach ($normalizedItems as $item) {
+                        $brandId = $item['brand_id'];
+                        $twisterId = $grn->supplier_id;
+                        $quantity = $item['quantity'];
 
-                    // Check if entry for this GRN item already exists
-                    $existingEntry = TwisterInventory::where('goods_received_note_id', $grn->id)
-                        ->where('twister_id', $twisterId)
-                        ->where('brand_id', $brandId)
-                        ->first();
+                        // Check if entry for this GRN item already exists
+                        $existingEntry = TwisterInventory::where('goods_received_note_id', $grn->id)
+                            ->where('twister_id', $twisterId)
+                            ->where('brand_id', $brandId)
+                            ->first();
 
-                    if ($existingEntry) {
-                        // Already recorded, skip or update if you want
-                        continue; // skip duplicate creation
+                        if ($existingEntry) {
+                            // Already recorded, skip or update if you want
+                            continue; // skip duplicate creation
+                        }
+
+                        // Calculate current balance
+                        $currentBalance = TwisterInventory::where('twister_id', $twisterId)
+                            // ->where('brand_id', $brandId)
+                            ->sum(DB::raw('issue - receive'));
+
+                        $newBalance = $currentBalance - $quantity; // Yarn received → twister balance increases
+
+                        // Create inventory entry
+                        TwisterInventory::create([
+                            'twister_id' => $twisterId,
+                            'raw_material_id' => $grn->raw_material_id,
+                            'brand_id' => $brandId,
+                            'receive' => $quantity, // Receiving from twister
+                            'issue' => 0,
+                            'balance' => $newBalance,
+                            'remarks' => "Yarn Received from Twister (Name: {$grn->supplier->name}) via GRN {$grn->grn_number}",
+                            'goods_received_note_id' => $grn->id,
+                        ]);
+
+                        // 🧩 RawMaterialInventory update (mirror)
+                        $currentMaterialBalance = RawMaterialInventory::where('raw_material_id', $grn->raw_material_id)
+                            ->where('brand_id', $brandId)
+                            ->sum(DB::raw('in_qty - out_qty'));
+
+                        $newMaterialBalance = $currentMaterialBalance + $quantity;
+
+                        RawMaterialInventory::create([
+                            'date' => $grn->challan_date,
+                            'raw_material_id' => $grn->raw_material_id,
+                            'brand_id' => $brandId,
+                            'in_qty' => $quantity,
+                            'out_qty' => 0,
+                            'balance' => $newMaterialBalance,
+                            'reference_type' => GoodsReceivedNote::class,
+                            'reference_id' => $grn->id,
+                            'remarks' => "Received from Twister (Name: {$grn->supplier->name}) via GRN {$grn->grn_number}",
+                        ]);
                     }
+                });
 
-                    // Calculate current balance
-                    $currentBalance = TwisterInventory::where('twister_id', $twisterId)
-                        // ->where('brand_id', $brandId)
-                        ->sum(DB::raw('credit - debit'));
-
-                    $newBalance = $currentBalance - $quantity; // Yarn received → twister balance increases
-
-                    // Create inventory entry
-                    TwisterInventory::create([
-                        'twister_id' => $twisterId,
-                        'raw_material_id' => $grn->raw_material_id,
-                        'brand_id' => $brandId,
-                        'debit' => $quantity, // Receiving from twister = credit
-                        'credit' => 0,
-                        'balance' => $newBalance,
-                        'remarks' => "Yarn Received from Twister {$grn->supplier->name} via GRN {$grn->grn_number}",
-                        'goods_received_note_id' => $grn->id,
-                    ]);
-
-                    // 🧩 RawMaterialInventory update (mirror)
-                    $currentMaterialBalance = RawMaterialInventory::where('raw_material_id', $grn->raw_material_id)
-                        ->where('brand_id', $brandId)
-                        ->sum(DB::raw('in_qty - out_qty'));
-
-                    $newMaterialBalance = $currentMaterialBalance + $quantity;
-
-                    RawMaterialInventory::create([
-                        'date' => $grn->challan_date,
-                        'raw_material_id' => $grn->raw_material_id,
-                        'brand_id' => $brandId,
-                        'in_qty' => $quantity,
-                        'out_qty' => 0,
-                        'balance' => $newMaterialBalance,
-                        'reference_type' => GoodsReceivedNote::class,
-                        'reference_id' => $grn->id,
-                        'remarks' => "Received from Twister {$grn->supplier->name} via GRN {$grn->grn_number}",
-                    ]);
-                }
             }
         }
     }

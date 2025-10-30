@@ -2,20 +2,22 @@
 
 namespace App\Filament\Resources\Master\Units;
 
-use App\Filament\Resources\Master\Units\Pages\CreateUnit;
+use BackedEnum;
+use Filament\Tables\Table;
+use App\Models\Master\Unit;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use App\Filament\Support\Traits\NavigationGroup;
 use App\Filament\Resources\Master\Units\Pages\EditUnit;
 use App\Filament\Resources\Master\Units\Pages\ListUnits;
+use App\Filament\Resources\Master\Units\Pages\CreateUnit;
 use App\Filament\Resources\Master\Units\Schemas\UnitForm;
 use App\Filament\Resources\Master\Units\Tables\UnitsTable;
-use App\Models\Master\Unit;
-use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 
 class UnitResource extends Resource
 {
+    use NavigationGroup;
     protected static ?string $model = Unit::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-scale';

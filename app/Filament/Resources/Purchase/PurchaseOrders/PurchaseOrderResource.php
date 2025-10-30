@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use App\Models\Purchase\PurchaseOrder;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Support\Traits\NavigationGroup;
 use App\Filament\Resources\Purchase\PurchaseOrders\Pages\EditPurchaseOrder;
 use App\Filament\Resources\Purchase\PurchaseOrders\Pages\ViewPurchaseOrder;
 use App\Filament\Resources\Purchase\PurchaseOrders\Pages\ListPurchaseOrders;
@@ -19,6 +20,7 @@ use App\Filament\Resources\Purchase\PurchaseOrders\Schemas\PurchaseOrderInfolist
 
 class PurchaseOrderResource extends Resource
 {
+    use NavigationGroup;
     protected static ?string $model = PurchaseOrder::class;
 
     public static function getNavigationIcon(): string|BackedEnum|null

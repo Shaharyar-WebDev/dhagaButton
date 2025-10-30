@@ -8,6 +8,7 @@ use App\Models\Master\RawMaterial;
 use App\Models\Purchase\DeliveryOrder;
 use App\Models\Purchase\GoodsReceivedNote;
 use App\Models\Purchase\PurchaseOrder;
+use App\Models\Purchase\StockTransferRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class TwisterInventory extends Model
@@ -20,8 +21,12 @@ class TwisterInventory extends Model
         'goods_received_note_id',
         'raw_material_id',
         'brand_id',
-        'debit',
-        'credit',
+        'stock_transfer_record_id',
+        // 'debit',
+        // 'credit',
+        'receive',
+        'dyer_id',
+        'issue',
         'balance',
         'remarks',
     ];
@@ -43,10 +48,20 @@ class TwisterInventory extends Model
         return $this->belongsTo(GoodsReceivedNote::class, 'goods_received_note_id');
     }
 
+    public function str()
+    {
+        return $this->belongsTo(StockTransferRecord::class, 'stock_transfer_record_id');
+    }
+
     // Twister (job worker) to whom yarn is sent or received from
     public function twister()
     {
         return $this->belongsTo(Supplier::class, 'twister_id');
+    }
+
+    public function dyer()
+    {
+        return $this->belongsTo(Supplier::class, 'dyer_id');
     }
 
     public function rawMaterial()

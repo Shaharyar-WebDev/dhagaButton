@@ -82,6 +82,9 @@ class GoodsReceivedNoteForm
             if (request()->has('is_purchasing')) {
                 $set('is_purchasing', true);
             }
+            if (request()->has('raw_material_id')) {
+                $set('raw_material_id', request('raw_material_id'));
+            }
         }
 
         return [
@@ -265,7 +268,7 @@ class GoodsReceivedNoteForm
                                             // Get total available balance for the brand
                                             $balance = TwisterInventory::where('twister_id', $supplierId)
                                                 ->where('brand_id', $brandId)
-                                                ->sum(DB::raw('credit - debit'));
+                                                ->sum(DB::raw('issue - receive'));
 
                                             // Sum all quantities entered in repeater for this brand
                                             $repeaterItems = $get('../../items');
@@ -315,7 +318,7 @@ class GoodsReceivedNoteForm
 
                                     $balance = TwisterInventory::where('twister_id', $supplierId)
                                         ->where('brand_id', $brandId)
-                                        ->sum(DB::raw('credit - debit'));
+                                        ->sum(DB::raw('issue - receive'));
 
                                     return "Available: {$balance} Kg";
                                 }

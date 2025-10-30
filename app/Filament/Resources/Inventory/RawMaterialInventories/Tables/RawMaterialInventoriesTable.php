@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Inventory\RawMaterialInventories\Tables;
 
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -85,7 +87,10 @@ class RawMaterialInventoriesTable
                     ->relationship('brand', 'name'),
             ])
             ->recordActions([
-                EditAction::make(),
+                // ActionGroup::make([
+                    // EditAction::make(),
+                    DeleteAction::make(),
+                // ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

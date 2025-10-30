@@ -2,22 +2,24 @@
 
 namespace App\Filament\Resources\Purchase\GoodsReceivedNotes;
 
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\CreateGoodsReceivedNote;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\EditGoodsReceivedNote;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\ListGoodsReceivedNotes;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\ViewGoodsReceivedNote;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Schemas\GoodsReceivedNoteForm;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Schemas\GoodsReceivedNoteInfolist;
-use App\Filament\Resources\Purchase\GoodsReceivedNotes\Tables\GoodsReceivedNotesTable;
-use App\Models\Purchase\GoodsReceivedNote;
 use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use App\Models\Purchase\GoodsReceivedNote;
+use App\Filament\Support\Traits\NavigationGroup;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\EditGoodsReceivedNote;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\ViewGoodsReceivedNote;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\ListGoodsReceivedNotes;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Pages\CreateGoodsReceivedNote;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Schemas\GoodsReceivedNoteForm;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Tables\GoodsReceivedNotesTable;
+use App\Filament\Resources\Purchase\GoodsReceivedNotes\Schemas\GoodsReceivedNoteInfolist;
 
 class GoodsReceivedNoteResource extends Resource
 {
+    use NavigationGroup;
     protected static ?string $model = GoodsReceivedNote::class;
 
     public static function getNavigationIcon(): string|BackedEnum|null

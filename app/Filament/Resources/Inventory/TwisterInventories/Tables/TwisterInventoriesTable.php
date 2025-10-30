@@ -14,6 +14,7 @@ use Filament\Tables\Filters\SelectFilter;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
 use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
+use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordResource;
 
 class TwisterInventoriesTable
 {
@@ -66,16 +67,40 @@ class TwisterInventoriesTable
                     ->sortable()
                     ->toggleable(),
 
+                TextColumn::make('str.str_number')
+                    ->label('Stock Transfer Record')
+                    ->placeholder('---')
+                    ->url(function ($record) {
+                        return StockTransferRecordResource::getUrl('index', [
+                            'filters' => [
+                                'str_number' => [
+                                    'str_number' => $record->str?->str_number
+                                ]
+                            ],
+                        ]);
+                    }, true)
+                    ->sortable()
+                    ->toggleable(),
+
                 TextColumn::make('challan_reference')
                     ->label('Challan Reference')
                     ->toggleable()
                     ->copyable()
                     ->placeholder('---')
-                    ->getStateUsing(fn($record) => $record?->deliveryOrder->challan_reference ?? $record->grn?->challan_no)
+                    ->getStateUsing(function ($record) {
+                        return $record->deliveryOrder->challan_reference
+                            ?? $record->grn?->challan_no
+                            ?? $record->str?->challan_no
+                            ?? '---';
+                    })
                     ->searchable(query: function ($query, $search) {
-                        $query->whereHas('deliveryOrder', function ($q) use ($search) {
-                            $q->where('challan_reference', 'like', "%{$search}%");
-                        });
+                        $query
+                            ->whereHas('deliveryOrder', function ($q) use ($search) {
+                                $q->where('challan_reference', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('grn', function ($q) use ($search) {
+                                $q->where('challan_no', 'like', "%{$search}%");
+                            });
                     }),
 
                 TextColumn::make('delivery_order_reference')
@@ -111,18 +136,28 @@ class TwisterInventoriesTable
                 TextColumn::make('twister.name')
                     ->label('Twister')
                     ->searchable()
+                    ->placeholder('---')
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('credit')
+                TextColumn::make('dyer.name')
+                    ->label('Dyer')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Factory')
+                    ->toggleable(),
+
+                TextColumn::make('issue')
                     ->label('Issue')
                     ->numeric(2)
+                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->color('danger')
                     ->alignRight()
                     ->sortable(),
 
-                TextColumn::make('debit')
+                TextColumn::make('receive')
                     ->label('Receive')
+                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->numeric(2)
                     ->color('success')
                     ->alignRight()

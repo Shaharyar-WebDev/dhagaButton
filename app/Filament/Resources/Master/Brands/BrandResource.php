@@ -2,20 +2,22 @@
 
 namespace App\Filament\Resources\Master\Brands;
 
-use App\Filament\Resources\Master\Brands\Pages\CreateBrand;
+use BackedEnum;
+use Filament\Tables\Table;
+use App\Models\Master\Brand;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use App\Filament\Support\Traits\NavigationGroup;
 use App\Filament\Resources\Master\Brands\Pages\EditBrand;
 use App\Filament\Resources\Master\Brands\Pages\ListBrands;
+use App\Filament\Resources\Master\Brands\Pages\CreateBrand;
 use App\Filament\Resources\Master\Brands\Schemas\BrandForm;
 use App\Filament\Resources\Master\Brands\Tables\BrandsTable;
-use App\Models\Master\Brand;
-use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 
 class BrandResource extends Resource
 {
+    use NavigationGroup;
     protected static ?string $model = Brand::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-tag';

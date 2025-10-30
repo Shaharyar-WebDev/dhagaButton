@@ -10,15 +10,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('twister_inventories', function (Blueprint $table) {
+        Schema::create('dyer_inventories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->nullable()->constrained('suppliers');
-            $table->foreignId('twister_id')->constrained('suppliers', 'id');
-            $table->foreignId('delivery_order_id')->nullable()->constrained('delivery_orders')->cascadeOnDelete();
-            $table->foreignId('dyer_id')->nullable()->constrained('suppliers', 'id');
-            $table->foreignId('goods_received_note_id')->nullable()->constrained('goods_received_notes')->cascadeOnDelete();
+            $table->foreignId('from_supplier_id')->nullable()->constrained('suppliers', 'id');
+            $table->foreignId('dyer_id')->constrained('suppliers', 'id');
+            // $table->foreignId('goods_received_note_id')->nullable()->constrained('goods_received_notes')->cascadeOnDelete();
             $table->foreignId('stock_transfer_record_id')->nullable()->constrained('stock_transfer_records')->cascadeOnDelete();
-            $table->foreignId('purchase_order_id')->nullable()->constrained();
             $table->foreignId('raw_material_id')->constrained();
             $table->foreignId('brand_id')->nullable()->constrained('brands');
             // $table->decimal('debit', 14, 2)->default(0);
@@ -36,6 +33,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('twister_inventories');
+        Schema::dropIfExists('dyer_inventories');
     }
 };

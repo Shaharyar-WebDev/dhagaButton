@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Inventory\TwisterInventories\Pages;
 
-use App\Filament\Resources\Inventory\TwisterInventories\TwisterInventoryResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Support\Actions\CustomAction;
+use App\Filament\Resources\Inventory\TwisterInventories\TwisterInventoryResource;
 
 class ListTwisterInventories extends ListRecords
 {
@@ -14,6 +15,8 @@ class ListTwisterInventories extends ListRecords
     {
         return [
             // CreateAction::make(),
+            CustomAction::receiveYarn(),
+            CustomAction::sendToDyer(),
         ];
     }
 }

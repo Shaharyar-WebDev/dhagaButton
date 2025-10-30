@@ -1,6 +1,10 @@
 <?php return array (
   'livewireComponents' => 
   array (
+    'app.filament.resources.inventory.dyer-inventories.pages.create-dyer-inventory' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\CreateDyerInventory',
+    'app.filament.resources.inventory.dyer-inventories.pages.edit-dyer-inventory' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\EditDyerInventory',
+    'app.filament.resources.inventory.dyer-inventories.pages.list-dyer-inventories' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\ListDyerInventories',
+    'app.filament.resources.inventory.dyer-inventories.pages.view-dyer-inventory' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\Pages\\ViewDyerInventory',
     'app.filament.resources.inventory.raw-material-inventories.pages.create-raw-material-inventory' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\Pages\\CreateRawMaterialInventory',
     'app.filament.resources.inventory.raw-material-inventories.pages.edit-raw-material-inventory' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\Pages\\EditRawMaterialInventory',
     'app.filament.resources.inventory.raw-material-inventories.pages.list-raw-material-inventories' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\Pages\\ListRawMaterialInventories',
@@ -32,6 +36,9 @@
     'app.filament.resources.purchase.purchase-orders.pages.edit-purchase-order' => 'App\\Filament\\Resources\\Purchase\\PurchaseOrders\\Pages\\EditPurchaseOrder',
     'app.filament.resources.purchase.purchase-orders.pages.list-purchase-orders' => 'App\\Filament\\Resources\\Purchase\\PurchaseOrders\\Pages\\ListPurchaseOrders',
     'app.filament.resources.purchase.purchase-orders.pages.view-purchase-order' => 'App\\Filament\\Resources\\Purchase\\PurchaseOrders\\Pages\\ViewPurchaseOrder',
+    'app.filament.resources.purchase.stock-transfer-records.pages.create-stock-transfer-record' => 'App\\Filament\\Resources\\Purchase\\StockTransferRecords\\Pages\\CreateStockTransferRecord',
+    'app.filament.resources.purchase.stock-transfer-records.pages.edit-stock-transfer-record' => 'App\\Filament\\Resources\\Purchase\\StockTransferRecords\\Pages\\EditStockTransferRecord',
+    'app.filament.resources.purchase.stock-transfer-records.pages.list-stock-transfer-records' => 'App\\Filament\\Resources\\Purchase\\StockTransferRecords\\Pages\\ListStockTransferRecords',
     'app.filament.pages.dashboard' => 'App\\Filament\\Pages\\Dashboard',
     'app.filament.pages.settings.manage-general-settings' => 'App\\Filament\\Pages\\Settings\\ManageGeneralSettings',
     'app.filament.pages.settings.manage-theme-settings' => 'App\\Filament\\Pages\\Settings\\ManageThemeSettings',
@@ -75,6 +82,7 @@
   ),
   'resources' => 
   array (
+    'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\DyerInventories\\DyerInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\DyerInventories\\DyerInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\RawMaterialInventories\\RawMaterialInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\RawMaterialInventories\\RawMaterialInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Inventory\\TwisterInventories\\TwisterInventoryResource.php' => 'App\\Filament\\Resources\\Inventory\\TwisterInventories\\TwisterInventoryResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Master\\Brands\\BrandResource.php' => 'App\\Filament\\Resources\\Master\\Brands\\BrandResource',
@@ -84,6 +92,7 @@
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Purchase\\DeliveryOrders\\DeliveryOrderResource.php' => 'App\\Filament\\Resources\\Purchase\\DeliveryOrders\\DeliveryOrderResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Purchase\\GoodsReceivedNotes\\GoodsReceivedNoteResource.php' => 'App\\Filament\\Resources\\Purchase\\GoodsReceivedNotes\\GoodsReceivedNoteResource',
     'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Purchase\\PurchaseOrders\\PurchaseOrderResource.php' => 'App\\Filament\\Resources\\Purchase\\PurchaseOrders\\PurchaseOrderResource',
+    'F:\\laravel-projects\\DhagaButton\\app\\Filament\\Resources\\Purchase\\StockTransferRecords\\StockTransferRecordResource.php' => 'App\\Filament\\Resources\\Purchase\\StockTransferRecords\\StockTransferRecordResource',
   ),
   'resourceDirectories' => 
   array (

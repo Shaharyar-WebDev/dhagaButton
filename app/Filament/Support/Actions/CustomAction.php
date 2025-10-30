@@ -3,10 +3,12 @@
 namespace App\Filament\Support\Actions;
 
 use Filament\Actions\Action;
+use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
+use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordResource;
 
 class CustomAction
 {
@@ -37,12 +39,12 @@ class CustomAction
         return Action::make('create_delivery_order')
             ->label('Create Delivery order')
             ->color('info')
-            // ->visible(
-            //     fn($record) =>
-            //     $record->canCreateDo()
-            //     &&
-            //     $record->hasRemainingDoQty()
-            // )
+            ->visible(
+                fn($record) =>
+                $record->canCreateDo()
+                &&
+                $record->hasRemainingDoQty()
+            )
             ->icon(DeliveryOrderResource::getNavigationIcon())
             ->action(function ($record, $data, $livewire) {
                 // Redirect to the Stock Transpufer Record resource creation page
@@ -76,5 +78,65 @@ class CustomAction
                     navigate: spa_mode()
                 );
             });
+    }
+
+    public static function receiveYarn()
+    {
+        return Action::make('receive_yarn')
+            // ->label('')
+            ->color('success')
+            ->icon(GoodsReceivedNoteResource::getNavigationIcon())
+            ->action(function ($data, $livewire) {
+                // Redirect to the Stock Transpufer Record resource creation page
+                $livewire->redirect(
+                    GoodsReceivedNoteResource::getUrl('create', [
+                        'raw_material_id' => RawMaterial::whereHas('type', function ($query) {
+                        $query->where('name', 'like', 'twisted_yarn');
+                    })->first()?->id,
+                    ]),
+                    navigate: spa_mode()
+                );
+            });
+    }
+
+    public static function sendToDyer()
+    {
+        return Action::make('send_to_dyer')
+            // ->label('')
+            ->color('info')
+            ->icon(StockTransferRecordResource::getNavigationIcon())
+            ->action(function ($data, $livewire) {
+                // Redirect to the Stock Transpufer Record resource creation page
+                $livewire->redirect(
+                    StockTransferRecordResource::getUrl('create', [
+                        'raw_material_id' => RawMaterial::whereHas('type', function ($query) {
+                        $query->where('name', 'like', 'twisted_yarn');
+                    })->first()?->id,
+                    ]),
+                    navigate: spa_mode()
+                );
+            });
+    }
+
+    public static function unlock()
+    {
+        return Action::make('unlock')
+            ->label('Unlock Record')
+            ->visible(fn($record) => $record->locked)
+            ->requiresConfirmation()
+            ->action(function ($record) {
+                DB::transaction(function () use ($record) {
+                    $record->locked = false;
+                    $record->saveQuietly();
+                });
+
+                Notification::make()
+                    ->title('Verified')
+                    ->success()
+                    ->body('Record has been unlocked.')
+                    ->send();
+            })
+            ->color('info')
+            ->icon('heroicon-o-lock-open');
     }
 }

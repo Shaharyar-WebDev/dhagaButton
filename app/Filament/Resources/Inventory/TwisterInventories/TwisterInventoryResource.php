@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Inventory\TwisterInventory;
+use App\Filament\Support\Traits\NavigationGroup;
 use App\Filament\Support\Traits\ReadOnlyResource;
 use App\Filament\Resources\Inventory\TwisterInventories\Pages\EditTwisterInventory;
 use App\Filament\Resources\Inventory\TwisterInventories\Pages\ViewTwisterInventory;
@@ -20,10 +21,11 @@ use App\Filament\Resources\Inventory\TwisterInventories\Schemas\TwisterInventory
 
 class TwisterInventoryResource extends Resource
 {
+    use NavigationGroup;
     use ReadOnlyResource;
     protected static ?string $model = TwisterInventory::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-arrow-path';
 
     protected static ?string $recordTitleAttribute = 'twister_id';
 

@@ -2,23 +2,25 @@
 
 namespace App\Filament\Resources\Inventory\RawMaterialInventories;
 
-use App\Filament\Resources\Inventory\RawMaterialInventories\Pages\CreateRawMaterialInventory;
+use BackedEnum;
+use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use App\Models\Inventory\RawMaterialInventory;
+use App\Filament\Support\Traits\NavigationGroup;
 use App\Filament\Resources\Inventory\RawMaterialInventories\Pages\EditRawMaterialInventory;
+use App\Filament\Resources\Inventory\RawMaterialInventories\Pages\CreateRawMaterialInventory;
 use App\Filament\Resources\Inventory\RawMaterialInventories\Pages\ListRawMaterialInventories;
 use App\Filament\Resources\Inventory\RawMaterialInventories\Schemas\RawMaterialInventoryForm;
 use App\Filament\Resources\Inventory\RawMaterialInventories\Tables\RawMaterialInventoriesTable;
-use App\Models\Inventory\RawMaterialInventory;
-use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 
 class RawMaterialInventoryResource extends Resource
 {
+    use NavigationGroup;
     protected static ?string $model = RawMaterialInventory::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
     protected static ?string $recordTitleAttribute = 'raw_material_id';
 

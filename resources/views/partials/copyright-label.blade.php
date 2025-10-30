@@ -1,6 +1,6 @@
 <div class="cp-right-div">
     <span>
-        Copyright by x.x.x
+        © Copyright by Birdcoders
     </span>
     {{-- Developed By Shaharyar Ahmed --}}
 </div>

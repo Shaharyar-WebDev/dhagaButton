@@ -13,9 +13,9 @@ return new class extends Migration {
         Schema::create('delivery_orders', function (Blueprint $table) {
             $table->id();
             $table->string('do_number');
-            $table->string('delivery_order_reference');
+            $table->string('delivery_order_reference')->nullable();
             $table->json('attachments')->nullable();
-            $table->string('challan_reference');
+            $table->string('challan_reference')->nullable();
             $table->datetime('challan_date');
             $table->foreignId('purchase_order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('raw_material_id')->constrained('raw_materials'); // Yarn

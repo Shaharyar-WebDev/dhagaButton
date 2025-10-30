@@ -7,6 +7,7 @@ use App\Filament\Resources\Master\RawMaterials\Pages\EditRawMaterial;
 use App\Filament\Resources\Master\RawMaterials\Pages\ListRawMaterials;
 use App\Filament\Resources\Master\RawMaterials\Schemas\RawMaterialForm;
 use App\Filament\Resources\Master\RawMaterials\Tables\RawMaterialsTable;
+use App\Filament\Support\Traits\NavigationGroup;
 use App\Models\Master\RawMaterial;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,7 @@ use Filament\Tables\Table;
 
 class RawMaterialResource extends Resource
 {
+    use NavigationGroup;
     protected static ?string $model = RawMaterial::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
