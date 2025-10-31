@@ -2,7 +2,8 @@
 
 namespace App\Filament\Support\Traits;
 
-use App\Filament\Resources\Accounting\SupplierLedgers\SupplierLedgerResource;
+use App\Models\Master\Shade;
+use App\Models\Master\Article;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Purchase\GoodsReceivedNote;
 use App\Models\Purchase\StockTransferRecord;
@@ -13,10 +14,13 @@ use App\Filament\Resources\Master\RawMaterials\RawMaterialResource;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
 use App\Filament\Resources\Purchase\PurchaseOrders\PurchaseOrderResource;
 use App\Filament\Resources\Inventory\DyerInventories\DyerInventoryResource;
+use App\Filament\Resources\Accounting\SupplierLedgers\SupplierLedgerResource;
 use App\Filament\Resources\Inventory\TwisterInventories\TwisterInventoryResource;
 use App\Filament\Resources\Purchase\GoodsReceivedNotes\GoodsReceivedNoteResource;
 use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordResource;
 use App\Filament\Resources\Inventory\RawMaterialInventories\RawMaterialInventoryResource;
+use App\Filament\Resources\Master\Articles\ArticleResource;
+use App\Filament\Resources\Master\Shades\ShadeResource;
 
 trait NavigationGroup
 {
@@ -31,6 +35,8 @@ trait NavigationGroup
                 BrandResource::class,
                 UnitResource::class,
                 SupplierResource::class,
+                ArticleResource::class,
+                ShadeResource::class
             ],
             'Purchase' => [
                 PurchaseOrderResource::class,
