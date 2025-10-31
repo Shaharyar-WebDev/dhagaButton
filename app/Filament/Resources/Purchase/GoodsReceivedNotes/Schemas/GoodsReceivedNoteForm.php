@@ -23,6 +23,7 @@ use Filament\Forms\Components\FileUpload;
 use App\Models\Inventory\TwisterInventory;
 use Filament\Forms\Components\Placeholder;
 use Filament\Infolists\Components\TextEntry;
+use App\Filament\Support\Actions\CustomAction;
 use App\Filament\Resources\Master\Brands\Schemas\BrandForm;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
@@ -207,11 +208,16 @@ class GoodsReceivedNoteForm
                             //     return Brand::where('id', $po->brand_id)->pluck('name', 'id');
                             // })
                             ->relationship('brand', 'name')
+                            ->manageOptionForm(BrandForm::getForm())
                             ->required(),
 
                         TextInput::make('quantity')
                             ->label('Quantity')
                             ->numeric()
+                            ->prefixAction(CustomAction::unitConverter(
+                                targetField: 'quantity',
+                                getTargetUnit: fn($get) => RawMaterial::find($get('../../raw_material_id'))?->unit
+                            ))
                             ->suffix(fn($get) => $get('../../unit_name'))
                             ->rules(function ($get) {
 

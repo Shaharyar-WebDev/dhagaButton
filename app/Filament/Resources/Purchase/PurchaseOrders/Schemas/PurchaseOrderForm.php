@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Purchase\PurchaseOrders\Schemas;
 
+use App\Models\Master\Unit;
+use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
@@ -13,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\ToggleButtons;
+use App\Filament\Support\Actions\CustomAction;
 use App\Filament\Resources\Master\Brands\Schemas\BrandForm;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
@@ -104,6 +107,7 @@ class PurchaseOrderForm
                             ->step('0.01')
                             ->required()
                             ->reactive()
+                            ->prefixAction(CustomAction::unitConverter('ordered_quantity', fn($get) => $get('material')?->unit))
                             ->rules(function ($record) {
                                 if ($record?->exists && $record->deliveryOrders()->exists()) {
 
@@ -158,6 +162,7 @@ class PurchaseOrderForm
                             ->label('Total Amount')
                             ->numeric()
                             ->prefix('PKR')
+                            ->required()
                             ->disabled()
                             ->dehydrated() // still saves value
                             // ->helperText('Automatically calculated (quantity × rate).')

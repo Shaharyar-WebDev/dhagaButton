@@ -28,5 +28,21 @@ class UnitSeeder extends Seeder
             Unit::create($unit);
         });
 
+        Unit::create([
+            'name' => 'Bundle',
+            'symbol' => 'bndl',
+            'conversion_operator' => '*',
+            'base_unit_id' => Unit::where('name', 'Kilograms')->first()->id,
+            'conversion_value' => '4.5'
+        ], );
+
+        Unit::create([
+            'name' => 'Bag',
+            'symbol' => 'bag',
+            'conversion_operator' => '*',
+            'base_unit_id' => Unit::where('name', 'Bundle')->first()->id,
+            'conversion_value' => '10'
+        ]);
+
     }
 }

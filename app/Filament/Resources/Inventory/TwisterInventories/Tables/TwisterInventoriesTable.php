@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Inventory\TwisterInventories\Tables;
 
 use Filament\Tables\Table;
+use App\Models\Master\Unit;
 use Illuminate\Support\Str;
 use Filament\Actions\Action;
+use App\Services\UnitService;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
@@ -19,175 +21,227 @@ use App\Filament\Resources\Purchase\StockTransferRecords\StockTransferRecordReso
 
 class TwisterInventoriesTable
 {
+    public static function getForm()
+    {
+        return [
+            TextColumn::make('deliveryOrder.do_number')
+                ->label('Delivery Order')
+                ->url(function ($record) {
+                    return DeliveryOrderResource::getUrl('index', [
+                        'filters' => [
+                            'do_number' => [
+                                'do_number' => $record->deliveryOrder?->do_number
+                            ]
+                        ],
+                    ]);
+                }, true)
+                ->placeholder('---')
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('purchaseOrder.po_number')
+                ->label('Purchase Order')
+                ->placeholder('---')
+                ->url(function ($record) {
+                    return PurchaseOrderResource::getUrl('index', [
+                        'filters' => [
+                            'po_number' => [
+                                'po_number' => $record->purchaseOrder?->po_number
+                            ]
+                        ],
+                    ]);
+                }, true)
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('grn.grn_number')
+                ->label('Goods Received Note')
+                ->placeholder('---')
+                ->url(function ($record) {
+                    return GoodsReceivedNoteResource::getUrl('index', [
+                        'filters' => [
+                            'grn_number' => [
+                                'grn_number' => $record->grn?->grn_number
+                            ]
+                        ],
+                    ]);
+                }, true)
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('str.str_number')
+                ->label('Stock Transfer Record')
+                ->placeholder('---')
+                ->url(function ($record) {
+                    return StockTransferRecordResource::getUrl('index', [
+                        'filters' => [
+                            'str_number' => [
+                                'str_number' => $record->str?->str_number
+                            ]
+                        ],
+                    ]);
+                }, true)
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('challan_reference')
+                ->label('Challan Reference')
+                ->toggleable()
+                ->copyable()
+                ->placeholder('---')
+                ->getStateUsing(function ($record) {
+                    return $record->deliveryOrder->challan_reference
+                        ?? $record->grn?->challan_no
+                        ?? $record->str?->challan_no
+                        ?? '---';
+                })
+                ->searchable(query: function ($query, $search) {
+                    $query
+                        ->whereHas('deliveryOrder', function ($q) use ($search) {
+                            $q->where('challan_reference', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('grn', function ($q) use ($search) {
+                            $q->where('challan_no', 'like', "%{$search}%");
+                        });
+                }),
+
+            TextColumn::make('delivery_order_reference')
+                ->label('Delivery Order Ref')
+                ->toggleable()
+                ->copyable()
+                ->placeholder('---')
+                ->getStateUsing(fn($record) => $record?->deliveryOrder?->delivery_order_reference)
+                ->searchable(query: function ($query, $search) {
+                    $query->whereHas('deliveryOrder', function ($q) use ($search) {
+                        $q->where('delivery_order_reference', 'like', "%{$search}%");
+                    });
+                }),
+
+            TextColumn::make('rawMaterial.name')
+                ->label('Raw Material')
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('supplier.name')
+                ->label('Supplier')
+                ->searchable()
+                ->sortable()
+                ->placeholder('---')
+                ->toggleable(),
+
+            TextColumn::make('brand.name')
+                ->label('Brand')
+                ->searchable()
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('twister.name')
+                ->label('Twister')
+                ->searchable()
+                ->placeholder('---')
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('dyer.name')
+                ->label('Dyer')
+                ->searchable()
+                ->sortable()
+                ->placeholder('Factory')
+                ->toggleable(),
+
+            TextColumn::make('issue')
+                ->label('Issue')
+                ->numeric(2)
+                ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
+                ->color('danger')
+                ->alignRight()
+                ->sortable(),
+
+            TextColumn::make('receive')
+                ->label('Receive')
+                ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
+                ->numeric(2)
+                ->color('success')
+                ->alignRight()
+                ->sortable(),
+
+            TextColumn::make('balance')
+                ->label('Balance')
+                ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
+                ->numeric(2)
+                ->color('primary')
+                ->alignRight()
+                ->sortable(),
+
+            TextColumn::make('issue_all')
+                ->label('Issue (Other Units)')
+                ->getStateUsing(function ($record) {
+                    $output = [];
+                    foreach (UnitService::getUnits() as $unit) {
+                        $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->issue ?? 0);
+                        $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                    }
+
+                    return implode("<br>", $output);
+                })
+                ->html()
+                ->alignRight()
+                ->color('info'),
+
+            TextColumn::make('receive_all')
+                ->label('Receive (Other Units)')
+                ->getStateUsing(function ($record) {
+                    $output = [];
+                    foreach (UnitService::getUnits() as $unit) {
+                        if ($record->rawMaterial?->unit->id !== $unit->id) {
+                            $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->receive ?? 0);
+                            $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                        }
+                    }
+                    return implode("<br>", $output);
+                })
+                ->html()
+                ->alignRight()
+                ->color('info'),
+
+            TextColumn::make('balance_all')
+                ->label('Balance (Other Units)')
+                ->getStateUsing(function ($record) {
+                    $output = [];
+                    foreach (UnitService::getUnits() as $unit) {
+                        if ($record->rawMaterial?->unit->id !== $unit->id) {
+                            $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->balance ?? 0);
+                            $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                        }
+                    }
+                    return implode("<br>", $output);
+                })
+                ->html()
+                ->alignRight()
+                ->color('info'),
+
+            TextColumn::make('remarks')
+                ->label('Remarks')
+                ->formatStateUsing(function ($state) {
+                    return Str::limit($state, 30, '...');
+                })
+                ->tooltip(function ($state) {
+                    return $state;
+                })
+                ->toggleable(),
+
+            TextColumn::make('created_at')
+                ->label('Date')
+                ->date('d-M-Y H:i A')
+                ->sortable()
+                ->toggleable(),
+        ];
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
-            ->columns([
-                TextColumn::make('deliveryOrder.do_number')
-                    ->label('Delivery Order')
-                    ->url(function ($record) {
-                        return DeliveryOrderResource::getUrl('index', [
-                            'filters' => [
-                                'do_number' => [
-                                    'do_number' => $record->deliveryOrder?->do_number
-                                ]
-                            ],
-                        ]);
-                    }, true)
-                    ->placeholder('---')
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('purchaseOrder.po_number')
-                    ->label('Purchase Order')
-                    ->placeholder('---')
-                    ->url(function ($record) {
-                        return PurchaseOrderResource::getUrl('index', [
-                            'filters' => [
-                                'po_number' => [
-                                    'po_number' => $record->purchaseOrder?->po_number
-                                ]
-                            ],
-                        ]);
-                    }, true)
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('grn.grn_number')
-                    ->label('Goods Received Note')
-                    ->placeholder('---')
-                    ->url(function ($record) {
-                        return GoodsReceivedNoteResource::getUrl('index', [
-                            'filters' => [
-                                'grn_number' => [
-                                    'grn_number' => $record->grn?->grn_number
-                                ]
-                            ],
-                        ]);
-                    }, true)
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('str.str_number')
-                    ->label('Stock Transfer Record')
-                    ->placeholder('---')
-                    ->url(function ($record) {
-                        return StockTransferRecordResource::getUrl('index', [
-                            'filters' => [
-                                'str_number' => [
-                                    'str_number' => $record->str?->str_number
-                                ]
-                            ],
-                        ]);
-                    }, true)
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('challan_reference')
-                    ->label('Challan Reference')
-                    ->toggleable()
-                    ->copyable()
-                    ->placeholder('---')
-                    ->getStateUsing(function ($record) {
-                        return $record->deliveryOrder->challan_reference
-                            ?? $record->grn?->challan_no
-                            ?? $record->str?->challan_no
-                            ?? '---';
-                    })
-                    ->searchable(query: function ($query, $search) {
-                        $query
-                            ->whereHas('deliveryOrder', function ($q) use ($search) {
-                                $q->where('challan_reference', 'like', "%{$search}%");
-                            })
-                            ->orWhereHas('grn', function ($q) use ($search) {
-                                $q->where('challan_no', 'like', "%{$search}%");
-                            });
-                    }),
-
-                TextColumn::make('delivery_order_reference')
-                    ->label('Delivery Order Ref')
-                    ->toggleable()
-                    ->copyable()
-                    ->placeholder('---')
-                    ->getStateUsing(fn($record) => $record?->deliveryOrder?->delivery_order_reference)
-                    ->searchable(query: function ($query, $search) {
-                        $query->whereHas('deliveryOrder', function ($q) use ($search) {
-                            $q->where('delivery_order_reference', 'like', "%{$search}%");
-                        });
-                    }),
-
-                TextColumn::make('rawMaterial.name')
-                    ->label('Raw Material')
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('supplier.name')
-                    ->label('Supplier')
-                    ->searchable()
-                    ->sortable()
-                    ->placeholder('---')
-                    ->toggleable(),
-
-                TextColumn::make('brand.name')
-                    ->label('Brand')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('twister.name')
-                    ->label('Twister')
-                    ->searchable()
-                    ->placeholder('---')
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('dyer.name')
-                    ->label('Dyer')
-                    ->searchable()
-                    ->sortable()
-                    ->placeholder('Factory')
-                    ->toggleable(),
-
-                TextColumn::make('issue')
-                    ->label('Issue')
-                    ->numeric(2)
-                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
-                    ->color('danger')
-                    ->alignRight()
-                    ->sortable(),
-
-                TextColumn::make('receive')
-                    ->label('Receive')
-                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
-                    ->numeric(2)
-                    ->color('success')
-                    ->alignRight()
-                    ->sortable(),
-
-                TextColumn::make('balance')
-                    ->label('Balance')
-                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
-                    ->numeric(2)
-                    ->color('primary')
-                    ->alignRight()
-                    ->sortable(),
-
-                TextColumn::make('remarks')
-                    ->label('Remarks')
-                    ->formatStateUsing(function ($state) {
-                        return Str::limit($state, 30, '...');
-                    })
-                    ->tooltip(function ($state) {
-                        return $state;
-                    })
-                    ->toggleable(),
-
-                TextColumn::make('created_at')
-                    ->label('Date')
-                    ->date('d-M-Y H:i A')
-                    ->sortable()
-                    ->toggleable(),
-            ])
+            ->columns(self::getForm())
             ->filters([
                 SelectFilter::make('supplier')
                     ->relationship('supplier', 'name')

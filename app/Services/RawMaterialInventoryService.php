@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
+use App\Services\PurchaseOrderService;
 use App\Services\SupplierLedgerService;
 use App\Models\Purchase\GoodsReceivedNote;
 use App\Models\Inventory\RawMaterialInventory;
@@ -51,8 +53,10 @@ class RawMaterialInventoryService
         PurchaseOrderService::updateStatusFromGrn($grn);
     }
 
-    public static function renderHtml(array $balances)
+    public static function renderHtml(array $balances, $rawMaterialId)
     {
-        return view('partials.inventory', compact('balances'))->render();
+        $rawMaterial = RawMaterial::find($rawMaterialId)->first();
+
+        return view('partials.inventory', compact('balances', 'rawMaterial'))->render();
     }
 }

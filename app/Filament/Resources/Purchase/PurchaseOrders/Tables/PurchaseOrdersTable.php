@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Purchase\PurchaseOrders\Tables;
 
 use Filament\Tables\Table;
+use App\Services\UnitService;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
@@ -82,6 +83,42 @@ class PurchaseOrdersTable
                 //     ->getStateUsing(fn($record) => $record->remainingQtyToReceive())
                 //     ->toggleable()
                 //     ->suffix(fn($record) => ' ' . ($record->rawMaterial?->unit?->symbol ?? '')),
+
+
+
+                TextColumn::make('ordered_quantity_all')
+                    ->label('Ordered Qty (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->ordered_quantity ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
+
+                TextColumn::make('received_quantity_all')
+                    ->label('Received Qty (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->received_quantity ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
 
                 TextColumn::make('rate')
                     ->label('Rate per Unit')

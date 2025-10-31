@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Inventory\RawMaterialInventories\Tables;
 
 use Filament\Tables\Table;
+use App\Services\UnitService;
 use Filament\Actions\EditAction;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -48,6 +49,58 @@ class RawMaterialInventoriesTable
                     ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->sortable(),
 
+
+                TextColumn::make('in_all')
+                    ->label('In (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->in_qty ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
+
+                TextColumn::make('out_all')
+                    ->label('Out (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->out_qty ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
+
+                TextColumn::make('balance_all')
+                    ->label('Balance (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->balance ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
+
                 TextColumn::make('rate')
                     ->numeric()
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -88,8 +141,8 @@ class RawMaterialInventoriesTable
             ])
             ->recordActions([
                 // ActionGroup::make([
-                    // EditAction::make(),
-                    DeleteAction::make(),
+                // EditAction::make(),
+                DeleteAction::make(),
                 // ]),
             ])
             ->toolbarActions([

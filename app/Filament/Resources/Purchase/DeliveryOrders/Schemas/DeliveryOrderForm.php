@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Purchase\DeliveryOrders\Schemas;
 use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use App\Models\Master\Supplier;
+use App\Models\Master\RawMaterial;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
 use App\Models\Purchase\PurchaseOrder;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use App\Filament\Support\Actions\CustomAction;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
 class DeliveryOrderForm
@@ -117,6 +119,10 @@ class DeliveryOrderForm
                                     ->label('Quantity')
                                     ->numeric()
                                     ->required()
+                                    ->prefixAction(CustomAction::unitConverter(
+                                        targetField: 'quantity',
+                                        getTargetUnit: fn($get) => RawMaterial::find($get('../../raw_material_id'))?->unit
+                                    ))
                                     ->step(0.01)
                                     ->rules(function ($state, $set, $get) {
                                         $maxQty = $get('available_quantity');

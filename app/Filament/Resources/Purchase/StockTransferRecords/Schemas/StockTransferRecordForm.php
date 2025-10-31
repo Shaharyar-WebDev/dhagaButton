@@ -12,13 +12,16 @@ use App\Models\Purchase\DeliveryOrder;
 use App\Models\Purchase\PurchaseOrder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use App\Services\TwisterInventoryService;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use App\Models\Inventory\TwisterInventory;
 use Filament\Infolists\Components\TextEntry;
 use App\Services\RawMaterialInventoryService;
+use App\Filament\Support\Actions\CustomAction;
 use App\Models\Inventory\RawMaterialInventory;
 use App\Filament\Resources\Master\Suppliers\Schemas\SupplierForm;
 
@@ -92,7 +95,6 @@ class StockTransferRecordForm
                     ->label('Challan Date')
                     ->required(),
 
-
                 // 💡 INVENTORY DISPLAY SECTION
                 Section::make('Raw Material Inventory')
                     ->reactive()
@@ -130,10 +132,9 @@ class StockTransferRecordForm
                                     ->mapWithKeys(fn($item, $key) => [$key => $item->collapse()])
                                     ->toArray();
 
-                                return RawMaterialInventoryService::renderHtml($balances);
+                                return RawMaterialInventoryService::renderHtml($balances, $get('raw_material_id'));
                             }),
                     ]),
-
 
                 Section::make()
                     ->columnSpanFull()
@@ -144,7 +145,7 @@ class StockTransferRecordForm
                             ->html()
                             ->state(function ($get) {
                                 $balances = TwisterInventoryService::getBalancesByTwisterAndBrand();
-                                return TwisterInventoryService::renderHtml($balances);
+                                return TwisterInventoryService::renderHtml($balances, $get('raw_material_id'));
                             })
                     ])
                     ->visible(function ($get) {
@@ -177,6 +178,10 @@ class StockTransferRecordForm
                             ->minValue(0.01)
                             ->step(0.01)
                             ->required()
+                            ->prefixAction(CustomAction::unitConverter(
+                                targetField: 'quantity',
+                                getTargetUnit: fn($get) => RawMaterial::find($get('../../raw_material_id'))?->unit
+                            ))
                             ->rules(function ($get) {
                                 return [
                                     function ($attribute, $value, $fail) use ($get) {
@@ -245,6 +250,23 @@ class StockTransferRecordForm
                     ])
                     ->columnSpanFull()
                     ->columns(3),
+
+                FileUpload::make('attachments')
+                    ->label('Attachments')
+                    ->multiple()
+                    // ->image()
+                    ->directory('images/stock-transfer-records')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->deleteUploadedFileUsing(function ($file) {
+                        Storage::disk('public')->delete($file);
+                    })
+                    ->nullable()
+                    ->downloadable()
+                    ->columnSpanFull()
+                    // ->helperText('Optional: Upload scanned challan or image proof.')
+                    // ->maxSize(2048)
+                    ->openable(),
 
 
                 Textarea::make('remarks')

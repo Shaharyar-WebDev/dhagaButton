@@ -25,6 +25,8 @@ return new class extends Migration {
             $table->decimal('credit', 14, 3)->default(0);  // Factory owes supplier
             $table->decimal('balance', 14, 3)->default(0); // Running balance (credit - debit)
 
+            $table->json('attachments')->nullable();
+
             // Optional reference info
             $table->string('reference_no')->nullable();    // GRN no, DO no, Bill no, etc.
             $table->date('date')->nullable();

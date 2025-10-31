@@ -26,6 +26,11 @@ class StockTransferRecord extends Model
         'status',
         'locked',
         'remarks',
+        'attachments'
+    ];
+
+    protected $casts = [
+        'attachments' => 'array',
     ];
 
     /**

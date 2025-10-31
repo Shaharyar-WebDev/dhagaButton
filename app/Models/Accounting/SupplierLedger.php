@@ -18,6 +18,11 @@ class SupplierLedger extends Model
         'reference_no',
         'date',
         'remarks',
+        'attachments'
+    ];
+
+    protected $casts = [
+        'attachments' => 'array',
     ];
 
     public function supplier()

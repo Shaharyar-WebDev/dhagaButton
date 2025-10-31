@@ -2,6 +2,7 @@
 
 namespace App\Filament\Support\Traits;
 
+use App\Filament\Resources\Purchase\DyeingPlans\DyeingPlanResource;
 use App\Models\Master\Shade;
 use App\Models\Master\Article;
 use Illuminate\Support\Facades\Cache;
@@ -43,7 +44,7 @@ trait NavigationGroup
                 StockTransferRecordResource::class,
                 DeliveryOrderResource::class,
                 GoodsReceivedNoteResource::class,
-
+                DyeingPlanResource::class
             ],
             'Stock Management' => [
                 RawMaterialInventoryResource::class,

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Inventory\DyerInventories\Tables;
 
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use App\Services\UnitService;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
@@ -61,20 +62,72 @@ class DyerInventoriesTable
                 TextColumn::make('issue')
                     ->numeric(2)
                     ->toggleable()
+                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->sortable()
                     ->label('Issue'),
 
                 TextColumn::make('receive')
                     ->numeric(2)
                     ->toggleable()
+                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->sortable()
                     ->label('Receive'),
 
                 TextColumn::make('balance')
                     ->numeric(2)
                     ->toggleable()
+                    ->suffix(fn($record) => ' ' . $record->rawMaterial?->unit?->symbol)
                     ->sortable()
                     ->label('Balance'),
+
+                TextColumn::make('issue_all')
+                    ->label('Issue (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->issue ?? 0);
+                            $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
+
+                TextColumn::make('receive_all')
+                    ->label('Receive (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->receive ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
+
+                TextColumn::make('balance_all')
+                    ->label('Balance (Other Units)')
+                    ->toggleable()
+                    ->getStateUsing(function ($record) {
+                        $output = [];
+                        foreach (UnitService::getUnits() as $unit) {
+                            if ($record->rawMaterial?->unit->id !== $unit->id) {
+                                $converted = $record->rawMaterial?->unit?->convertTo($unit, $record->balance ?? 0);
+                                $output[] = "{$unit->symbol}: " . number_format($converted, 2);
+                            }
+                        }
+                        return implode("<br>", $output);
+                    })
+                    ->html()
+                    ->alignRight()
+                    ->color('info'),
 
                 TextColumn::make('remarks')
                     ->label('Remarks')

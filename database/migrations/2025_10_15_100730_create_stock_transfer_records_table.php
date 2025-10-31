@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->date('challan_date');
             $table->enum('status', ['draft', 'verified']);
             $table->boolean('locked')->default(false);
+            $table->json('attachments')->nullable();
             $table->text('remarks')->nullable();
             $table->timestamps();
         });

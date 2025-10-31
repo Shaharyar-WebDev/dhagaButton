@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Purchase\DeliveryOrder;
@@ -54,7 +55,7 @@ class TwisterInventoryService
         });
     }
 
-    public static function renderHtml(array $balances)
+    public static function renderHtml(array $balances, $rawMaterialId)
     {
 
         // $html = '<div class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">'; // fully responsive
@@ -84,7 +85,9 @@ class TwisterInventoryService
 
         // return $html;
 
-        return view('partials.twister-inventory', compact('balances'))->render();
+        $rawMaterial = RawMaterial::find($rawMaterialId)->first();
+
+        return view('partials.twister-inventory', compact('balances', 'rawMaterial'))->render();
     }
 
     public static function getBalancesByTwisterAndBrand(): array

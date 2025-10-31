@@ -2,9 +2,12 @@
 
 namespace App\Filament\Support\Actions;
 
+use App\Models\Master\Unit;
 use Filament\Actions\Action;
 use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\Purchase\DeliveryOrders\DeliveryOrderResource;
@@ -169,5 +172,54 @@ class CustomAction
             })
             ->modalSubmitAction(false)
             ->modalWidth('3xl');
+    }
+
+    public static function unitConverter(
+        string $targetField = 'ordered_quantity',
+        ?callable $getTargetUnit = null, // optional callback for dynamic unit
+    ): Action {
+        return Action::make('convert')
+            ->icon('heroicon-o-calculator')
+            ->tooltip('Convert Units')
+            ->modalHeading('Convert Quantity')
+            ->modalWidth('md')
+            ->modalSubmitActionLabel('Apply Conversion')
+            ->schema([
+                Select::make('input_unit_id')
+                    ->label('Select Unit')
+                    ->options(fn() => Unit::pluck('symbol', 'id'))
+                    ->required(),
+
+                TextInput::make('input_qty')
+                    ->label('Enter Quantity')
+                    ->numeric()
+                    ->required(),
+            ])
+            ->action(function (array $data, callable $set, callable $get) use ($targetField, $getTargetUnit) {
+                $inputUnit = Unit::find($data['input_unit_id']);
+                $inputQty = (float) $data['input_qty'];
+
+                if (!$inputUnit) {
+                    return;
+                }
+
+                // 1️⃣ Figure out the target unit (the one your material uses)
+                $targetUnit = null;
+
+                if ($getTargetUnit) {
+                    $targetUnit = $getTargetUnit($get);
+                } elseif (method_exists($get, 'rawMaterial')) {
+                    $targetUnit = $get('rawMaterial')?->unit;
+                }
+
+                // If nothing found, assume Kilograms as fallback
+                $targetUnit ??= Unit::where('name', 'Kilograms')->first();
+
+                // 2️⃣ Convert user’s qty to that unit
+                $converted = $inputUnit->convertTo($targetUnit, $inputQty);
+
+                // 3️⃣ Set converted value in the desired field
+                $set($targetField, round($converted, 3));
+            });
     }
 }
