@@ -6,6 +6,7 @@ use App\Models\Master\Supplier;
 use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use App\Filament\Support\Helpers\Helper;
 use App\Models\Accounting\SupplierLedger;
 use App\Services\TwisterInventoryService;
 use App\Models\Inventory\TwisterInventory;
@@ -67,13 +68,6 @@ class GoodsReceivedNote extends Model
     |--------------------------------------------------------------------------
     */
 
-    public static function generateGrnNumber(): string
-    {
-        // $datePart = now()->format('y-m-d-Hi'); // like PO-25-10-13-2235
-        $datePart = now()->format('y-m-d-h:iA'); // like PO-25-10-13-10:35PM
-        return 'GRN-' . $datePart;
-    }
-
     // Optional: display GRN summary for tables or dropdowns
     public function getSummaryAttribute(): string
     {
@@ -95,11 +89,16 @@ class GoodsReceivedNote extends Model
         }
     }
 
+    public function getTitleAttributeName()
+    {
+        return $this->grn_number;
+    }
+
     protected static function booted()
     {
         static::creating(function ($grn) {
             if (!$grn->grn_number) {
-                $grn->grn_number = self::generateGrnNumber();
+                $grn->grn_number = Helper::generateDocumentNumber('GRN', GoodsReceivedNote::class);
             }
         });
 
@@ -114,6 +113,9 @@ class GoodsReceivedNote extends Model
         static::deleted(function ($grn) {
             SupplierLedger::where('source_type', get_class($grn))
                 ->where('source_id', $grn->id)
+                ->delete();
+            RawMaterialInventory::where('reference_type', get_class($grn))
+                ->where('reference_id', $grn->id)
                 ->delete();
         });
 

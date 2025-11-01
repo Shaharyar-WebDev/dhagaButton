@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Purchase\DeliveryOrder;
 use App\Models\Accounting\SupplierLedger;
 use App\Models\Purchase\GoodsReceivedNote;
 
@@ -44,8 +45,42 @@ class SupplierLedgerService
             'credit' => $totalAmount,
             'balance' => self::calculateBalance($supplier->id, $totalAmount),
             'reference_no' => $grn->challan_no,
-            'date' => now(),
-            'remarks' => "Received {$totalQty} kg of {$po->rawMaterial->name} @ Rs {$rate}/{$po->rawMaterial->unit?->name} via GRN",
+            'date' => $grn->challan_date,
+            'remarks' => "Received {$totalQty} kg of {$po->rawMaterial->name} {$po->brand?->name} @ Rs {$rate}/{$po->rawMaterial->unit?->name} via GRN",
+        ]);
+    }
+
+    public static function recordDeliveryOrder(DeliveryOrder $do)
+    {
+        if ($do->status !== 'verified') {
+            return;
+        }
+
+        // Avoid duplicates
+        $exists = SupplierLedger::where('source_type', DeliveryOrder::class)
+            ->where('source_id', $do->id)
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        $po = $do->purchaseOrder;
+        $supplier = $do->supplier;
+        $rate = $po->rate ?? 0;
+        $amount = $do->quantity * $rate;
+
+        SupplierLedger::create([
+            'supplier_id' => $supplier->id,
+            'source_type' => DeliveryOrder::class,
+            'source_id' => $do->id,
+            'transaction_type' => 'DO',
+            'debit' => 0, // no money going out
+            'credit' => $amount, // supplier delivered goods
+            'balance' => self::calculateBalance($supplier->id, $amount),
+            'reference_no' => $do->challan_reference,
+            'date' => $do->challan_date,
+            'remarks' => "Delivery of {$do->quantity} bags ({$po->rawMaterial->name}) {$po->brand?->name} Brand from {$supplier->name} via DO {$do->do_number}",
         ]);
     }
 

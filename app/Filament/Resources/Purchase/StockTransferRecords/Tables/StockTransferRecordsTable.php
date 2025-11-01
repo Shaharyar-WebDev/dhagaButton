@@ -90,7 +90,7 @@ class StockTransferRecordsTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
-                    CustomAction::unlock(),
+                    // CustomAction::unlock(),
                     CustomAction::viewAttachments('images/stock-transfer-records'),
                 ]),
             ])

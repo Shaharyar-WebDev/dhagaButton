@@ -90,6 +90,9 @@ class PurchaseOrdersTable
                     ->label('Ordered Qty (Other Units)')
                     ->toggleable()
                     ->getStateUsing(function ($record) {
+                        if (!in_array($record->rawMaterial?->type->name, ['twisted_yarn', 'yarns', 'dyed_yarn'])) {
+                            return;
+                        }
                         $output = [];
                         foreach (UnitService::getUnits() as $unit) {
                             if ($record->rawMaterial?->unit->id !== $unit->id) {
@@ -100,6 +103,7 @@ class PurchaseOrdersTable
                         return implode("<br>", $output);
                     })
                     ->html()
+                    ->placeholder('---')
                     ->alignRight()
                     ->color('info'),
 
@@ -107,6 +111,9 @@ class PurchaseOrdersTable
                     ->label('Received Qty (Other Units)')
                     ->toggleable()
                     ->getStateUsing(function ($record) {
+                        if (!in_array($record->rawMaterial?->type->name, ['twisted_yarn', 'yarns', 'dyed_yarn'])) {
+                            return;
+                        }
                         $output = [];
                         foreach (UnitService::getUnits() as $unit) {
                             if ($record->rawMaterial?->unit->id !== $unit->id) {
@@ -116,6 +123,7 @@ class PurchaseOrdersTable
                         }
                         return implode("<br>", $output);
                     })
+                    ->placeholder('---')
                     ->html()
                     ->alignRight()
                     ->color('info'),

@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Schemas\Components\Form;
 use App\Models\Purchase\DeliveryOrder;
@@ -36,27 +37,12 @@ class SupplierLedgersTable
                     ->formatStateUsing(function ($record) {
                         return class_basename($record->source_type);
                     })
-                    // ->url(function ($record) {
-                    //     if (!$record->source_type || !$record->source_id) {
-                    //         return null;
-                    //     }
-
-                    //     $type = class_basename($record->source_type);
-                    //     $id = $record->source_id;
-
-                    //     // Map model to route names (Filament resource routes)
-                    //     return match ($type) {
-                    //         'GoodsReceivedNote' => route('filament.admin.resources.goods-received-notes.edit', $id),
-                    //         'DeliveryOrder' => route('filament.admin.resources.delivery-orders.edit', $id),
-                    //         'StockTransferRecord' => route('filament.admin.resources.stock-transfer-records.edit', $id),
-                    //         default => null,
-                    //     };
-                    // })
                     ->searchable(),
 
                 TextColumn::make('source_id')
                     ->label('Source Ref')
                     ->url(function ($record) {
+                        // dd($record);
                         return match ($record->source_type) {
                             GoodsReceivedNote::class => GoodsReceivedNoteResource::getUrl('index', [
                                 'filters' => [
@@ -64,18 +50,30 @@ class SupplierLedgersTable
                                         'grn_number' => GoodsReceivedNote::find($record->source_id)->first()->grn_number
                                     ]
                                 ],
+                            ]),
+                            DeliveryOrder::class => DeliveryOrderResource::getUrl('index', [
+                                'filters' => [
+                                    'do_number' => [
+                                        'do_number' => DeliveryOrder::find($record->source_id)->first()->do_number
+                                    ]
+                                ],
+                            ]),
+                            StockTransferRecord::class => StockTransferRecordResource::getUrl('index', [
+                                'filters' => [
+                                    'str_number' => [
+                                        'str_number' => StockTransferRecord::find($record->source_id)->first()->str_number
+                                    ]
+                                ],
                             ])
                         };
                     })
                     ->formatStateUsing(function ($record) {
-                        return match ($record->source_type) {
-                            GoodsReceivedNote::class => GoodsReceivedNote::find($record->source_id)->first()->grn_number
-                        };
+                        return $record->source->getTitleAttributeName();
                     }),
 
-                TextColumn::make('transaction_type')
-                    ->label('Transaction Type')
-                    ->sortable(),
+                // TextColumn::make('transaction_type')
+                //     ->label('Transaction Type')
+                //     ->sortable(),
 
                 TextColumn::make('debit')
                     ->label('Debit')
@@ -127,8 +125,9 @@ class SupplierLedgersTable
                     ->preload(),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                // ViewAction::make(),
+                // EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

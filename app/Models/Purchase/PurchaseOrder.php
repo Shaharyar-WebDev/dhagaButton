@@ -8,6 +8,7 @@ use App\Models\Master\RawMaterial;
 use App\Models\Purchase\DeliveryOrder;
 use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\Model;
+use App\Filament\Support\Helpers\Helper;
 
 class PurchaseOrder extends Model
 {
@@ -186,6 +187,11 @@ class PurchaseOrder extends Model
         };
     }
 
+    public function getTitleAttributeName()
+    {
+        return $this->po_number;
+    }
+
     public static function getStatusOptionAttr()
     {
         return [
@@ -217,7 +223,7 @@ class PurchaseOrder extends Model
     {
         static::creating(function ($po) {
             if (!$po->po_number) {
-                $po->po_number = self::generatePoNumber();
+                $po->po_number = Helper::generateDocumentNumber('PO', PurchaseOrder::class);
             }
         });
 

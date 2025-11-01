@@ -48,7 +48,7 @@ class StockTransferRecordService
             $newBalance = $currentBalance - $qty;
 
             RawMaterialInventory::create([
-                'date' => $str->challan_date ?? now(),
+                'date' => $str->challan_date,
                 'raw_material_id' => $rawMaterialId,
                 'brand_id' => $brandId,
                 'in_qty' => 0,
@@ -78,6 +78,7 @@ class StockTransferRecordService
                 'dyer_id' => $to,
                 'issue' => 0,
                 'balance' => $newBalance,
+                'date' => $str->challan_date,
                 'remarks' => "Transferred to Supplier (ID: {$str->toSupplier?->name}) via STR #{$str->str_number}",
             ]);
         }
@@ -102,6 +103,7 @@ class StockTransferRecordService
                     'issue' => $qty,       // Yarn received by dyer
                     'receive' => 0,
                     'balance' => $newBalance,
+                    'date' => $str->challan_date,
                     'remarks' => "Received Twisted Yarn from " . ($str->fromSupplier?->name ?? 'Factory') . " via STR #{$str->str_number}",
                 ]);
             } elseif ($rawMaterial->type->name === 'boxes') {

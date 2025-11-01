@@ -39,6 +39,7 @@ class TwisterInventoryService
 
         $newBalance = $lastBalance + $do->quantity;
 
+
         DB::transaction(function () use ($do, $newBalance) {
             // Create ledger entry
             $do->twisterInventory()->create([
@@ -49,9 +50,12 @@ class TwisterInventoryService
                 'brand_id' => $do->brand_id,
                 'issue' => $do->quantity,
                 'receive' => 0,
+                'date' => $do->challan_date,
                 'balance' => $newBalance,
                 'remarks' => "Yarn sent to Twister via DO {$do->do_number}",
             ]);
+
+            SupplierLedgerService::recordDeliveryOrder($do);
         });
     }
 
@@ -157,6 +161,7 @@ class TwisterInventoryService
                             'receive' => $quantity, // Receiving from twister
                             'issue' => 0,
                             'balance' => $newBalance,
+                            'date' => $grn->challan_date,
                             'remarks' => "Yarn Received from Twister (Name: {$grn->supplier->name}) via GRN {$grn->grn_number}",
                             'goods_received_note_id' => $grn->id,
                         ]);

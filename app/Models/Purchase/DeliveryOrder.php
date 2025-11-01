@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Purchase\PurchaseOrder;
 use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\Model;
+use App\Filament\Support\Helpers\Helper;
+use App\Models\Accounting\SupplierLedger;
 use App\Services\TwisterInventoryService;
 use App\Models\Inventory\TwisterInventory;
 
@@ -61,6 +63,15 @@ class DeliveryOrder extends Model
         return $this->belongsTo(RawMaterial::class);
     }
 
+
+    public function purchaseOrderYarn()
+    {
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id')
+            ->whereHas('rawMaterial.type', function ($q) {
+                $q->where('name', 'yarns');
+            });
+    }
+
     // Brand of yarn or material being delivered
     public function brand()
     {
@@ -80,11 +91,16 @@ class DeliveryOrder extends Model
         return 'DO-' . $datePart;
     }
 
+    public function getTitleAttributeName()
+    {
+        return $this->do_number;
+    }
+
     protected static function booted()
     {
         static::creating(function ($do) {
             if (!$do->do_number) {
-                $do->do_number = self::generatePoNumber();
+                $do->do_number = Helper::generateDocumentNumber('DO', DeliveryOrder::class);
             }
         });
 
@@ -95,7 +111,13 @@ class DeliveryOrder extends Model
 
         static::deleted(function ($do) {
             PurchaseOrderService::updateStatusFromDeliveryOrder($do);
+            SupplierLedger::where('source_type', DeliveryOrder::class)
+                ->where('source_id', $do->id)
+                ->delete();
         });
+
+
+
     }
 
 }

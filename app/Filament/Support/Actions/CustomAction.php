@@ -3,10 +3,14 @@
 namespace App\Filament\Support\Actions;
 
 use App\Models\Master\Unit;
+use Illuminate\Support\Str;
 use Filament\Actions\Action;
 use App\Models\Master\RawMaterial;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SupplierLedgerExport;
 use Filament\Forms\Components\Select;
+use App\Exports\InventoryLedgerExport;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\FileUpload;
@@ -72,6 +76,7 @@ class CustomAction
             //     &&
             //     $record->hasRemainingGrnQty()
             // )
+            ->visible(fn($record) => !in_array($record->rawMaterial?->type?->name, ['yarns']))
             ->icon(GoodsReceivedNoteResource::getNavigationIcon())
             ->action(function ($record, $data, $livewire) {
                 // Redirect to the Stock Transpufer Record resource creation page
@@ -220,6 +225,27 @@ class CustomAction
 
                 // 3️⃣ Set converted value in the desired field
                 $set($targetField, round($converted, 3));
+            });
+    }
+
+    public static function exportSupplierAccountingLedger()
+    {
+        return Action::make('export_ledger')
+            ->label('Export Ledger')
+            ->icon('heroicon-o-document-arrow-down')
+            ->color('success')
+            ->action(function ($record) {
+                $export = new SupplierLedgerExport(
+                    $record->id,
+                    $record->name,
+                    null, // from
+                    null  // to
+                );
+
+                return Excel::download(
+                    $export,
+                    'Supplier Ledger - ' . Str::title($record->name) . ' (' . now()->format('d M Y, h.iA') . ').xlsx'
+                );
             });
     }
 }

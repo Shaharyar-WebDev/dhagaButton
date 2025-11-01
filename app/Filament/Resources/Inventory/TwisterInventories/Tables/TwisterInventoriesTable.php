@@ -146,7 +146,7 @@ class TwisterInventoriesTable
                 ->label('Dyer')
                 ->searchable()
                 ->sortable()
-                ->placeholder('Factory')
+                ->placeholder(fn($record) => $record->grn ? 'Factory' : '---')
                 ->toggleable(),
 
             TextColumn::make('issue')
@@ -230,8 +230,14 @@ class TwisterInventoriesTable
                 })
                 ->toggleable(),
 
-            TextColumn::make('created_at')
+            TextColumn::make('date')
                 ->label('Date')
+                ->date('d-M-Y H:i A')
+                ->sortable()
+                ->toggleable(),
+
+            TextColumn::make('created_at')
+                // ->label('Date')
                 ->date('d-M-Y H:i A')
                 ->sortable()
                 ->toggleable(),

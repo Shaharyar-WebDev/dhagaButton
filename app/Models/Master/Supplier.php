@@ -5,6 +5,7 @@ namespace App\Models\Master;
 use App\Models\Purchase\PurchaseOrder;
 use App\Models\Traits\HasCachedOptions;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Accounting\SupplierLedger;
 
 class Supplier extends Model
 {
@@ -23,6 +24,12 @@ class Supplier extends Model
         return $this->hasMany(PurchaseOrder::class);
     }
 
+    public function ledgers()
+    {
+        return $this->hasMany(SupplierLedger::class);
+    }
+
+
     // 🔁 (Optional) If you later have a Supplier Ledger / Payments table
     // public function transactions()
     // {
@@ -34,6 +41,22 @@ class Supplier extends Model
     | Accessors & Helpers
     |--------------------------------------------------------------------------
     */
+
+    public function getTotalDebitAttribute()
+    {
+        return $this->ledgers()->sum('debit');
+    }
+
+    public function getTotalCreditAttribute()
+    {
+        return $this->ledgers()->sum('credit');
+    }
+
+    public function getBalanceAttribute()
+    {
+        return $this->total_credit - $this->total_debit;
+    }
+
 
     // Display name with rate for dropdowns or summaries
     public function getDisplayNameAttribute(): string

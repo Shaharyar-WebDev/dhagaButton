@@ -63,6 +63,14 @@ class GoodsReceivedNotesTable
                     ->placeholder('---')
                     ->sortable(),
 
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn($record) => $record->status_color)
+                    ->sortable()
+                    ->toggleable()
+                    ->searchable(), // if you want to filter by status
+
                 TextColumn::make('remarks')
                     ->label('Remarks')
                     ->toggleable()

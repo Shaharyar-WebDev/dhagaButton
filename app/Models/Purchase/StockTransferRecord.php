@@ -71,6 +71,11 @@ class StockTransferRecord extends Model
         return $this->morphMany(RawMaterialInventory::class, 'referenceable', 'reference_type', 'reference_id');
     }
 
+    public function getTitleAttributeName()
+    {
+        return $this->str_number;
+    }
+
     public function lock()
     {
         if (!$this->locked) {

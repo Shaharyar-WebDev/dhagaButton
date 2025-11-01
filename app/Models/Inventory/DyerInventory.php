@@ -18,6 +18,7 @@ class DyerInventory extends Model
         'brand_id',
         'issue',
         'receive',
+        'date',
         'balance',
         'remarks',
     ];

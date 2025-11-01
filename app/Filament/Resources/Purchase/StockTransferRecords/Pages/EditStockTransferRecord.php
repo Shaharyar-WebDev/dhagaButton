@@ -16,7 +16,7 @@ class EditStockTransferRecord extends EditRecord
         return [
             DeleteAction::make(),
             CustomAction::verifyStatus(),
-            CustomAction::unlock(),
+            // CustomAction::unlock(),
         ];
     }
 }

@@ -45,8 +45,8 @@ class RawMaterialInventoryResource extends Resource
     {
         return [
             'index' => ListRawMaterialInventories::route('/'),
-            'create' => CreateRawMaterialInventory::route('/create'),
-            'edit' => EditRawMaterialInventory::route('/{record}/edit'),
+            // 'create' => CreateRawMaterialInventory::route('/create'),
+            // 'edit' => EditRawMaterialInventory::route('/{record}/edit'),
         ];
     }
 }

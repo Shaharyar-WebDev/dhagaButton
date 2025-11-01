@@ -60,7 +60,7 @@ class DeliveryOrderForm
                             ->schema([
                                 Select::make('purchase_order_id')
                                     ->label('Purchase Order')
-                                    ->relationship('purchaseOrder', 'po_number')
+                                    ->relationship('purchaseOrderYarn', 'po_number')
                                     ->searchable()
                                     ->disabled(fn($get) => $get('id') || $get('request_po_id'))
                                     ->reactive()

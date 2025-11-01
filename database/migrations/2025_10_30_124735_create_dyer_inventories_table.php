@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->decimal('issue', 14, 2)->default(0);
             $table->decimal('receive', 14, 2)->default(0);
             $table->decimal('balance', 14, 2)->default(0);
+            $table->dateTime('date');
             $table->text('remarks')->nullable();
             $table->timestamps();
         });

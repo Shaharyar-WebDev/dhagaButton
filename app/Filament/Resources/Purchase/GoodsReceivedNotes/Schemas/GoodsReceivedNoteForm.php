@@ -50,6 +50,11 @@ class GoodsReceivedNoteForm
             } else {
                 return;
             }
+        } else {
+            $po = PurchaseOrder::find($state);
+            // $poId = $reqPoId;
+            $set('raw_material_id', $po->raw_material_id);
+            $set('supplier_id', $po->supplier_id);
         }
 
         // if ($reqPoId) {
@@ -115,7 +120,7 @@ class GoodsReceivedNoteForm
                         })
                         ->reactive()
                         ->searchable()
-                        ->disabled(fn($get) => $get('request_po_id'))
+                        ->disabled(fn($get) => $get('request_po_id') || $get('purchase_order_id'))
                         ->dehydrated()
                         ->preload()
                         ->required(),
@@ -125,19 +130,20 @@ class GoodsReceivedNoteForm
                         ->relationship('supplier', 'name')
                         ->preload()
                         ->reactive()
-                        ->disabled(fn($get) => $get('request_po_id'))
+                        ->disabled(fn($get) => $get('request_po_id') || $get('purchase_order_id'))
                         ->searchable()
                         ->dehydrated()
                         ->required(),
 
                     Select::make('purchase_order_id')
                         ->label('Purchase Order')
-                        // ->disabled(fn($get) => $get('request_do_id'))
-                        ->disabled(true)
+                        ->disabled(fn($get) => $get('request_do_id'))
+                        // ->disabled(true)
                         ->afterStateHydrated(fn($state, $set) => self::updateFields($state, $set))
                         ->afterStateUpdated(fn($state, $set) => self::updateFields($state, $set))
                         ->relationship('purchaseOrder', 'po_number')
                         ->preload()
+                        ->reactive()
                         ->dehydrated()
                         ->searchable()
                         ->nullable(),
@@ -161,7 +167,7 @@ class GoodsReceivedNoteForm
                             ->html()
                             ->state(function ($get) {
                                 $balances = TwisterInventoryService::getBalancesByTwisterAndBrand();
-                                return TwisterInventoryService::renderHtml($balances);
+                                return TwisterInventoryService::renderHtml($balances, $get('raw_material_id'));
                             })
                     ])
                     ->visible(function ($get) {
@@ -190,24 +196,24 @@ class GoodsReceivedNoteForm
                         Select::make('brand_id')
                             ->label('Brand')
                             ->reactive()
-                            // ->options(function ($get) {
-                            //     $purchaseOrderId = $get('../../purchase_order_id');
+                            ->options(function ($get) {
+                                $purchaseOrderId = $get('../../purchase_order_id');
 
-                            //     $purchaseOrderId = $get('../../purchase_order_id');
+                                $purchaseOrderId = $get('../../purchase_order_id');
 
-                            //     if (!$purchaseOrderId) {
-                            //         return Brand::pluck('name', 'id');
-                            //     }
+                                if (!$purchaseOrderId) {
+                                    return Brand::pluck('name', 'id');
+                                }
 
-                            //     $po = PurchaseOrder::find($purchaseOrderId);
+                                $po = PurchaseOrder::find($purchaseOrderId);
 
-                            //     if (!$po || !$po->brand_id) {
-                            //         return [];
-                            //     }
+                                if (!$po || !$po->brand_id) {
+                                    return [];
+                                }
 
-                            //     return Brand::where('id', $po->brand_id)->pluck('name', 'id');
-                            // })
-                            ->relationship('brand', 'name')
+                                return Brand::where('id', $po->brand_id)->pluck('name', 'id');
+                            })
+                            // ->relationship('brand', 'name')
                             ->manageOptionForm(BrandForm::getForm())
                             ->required(),
 

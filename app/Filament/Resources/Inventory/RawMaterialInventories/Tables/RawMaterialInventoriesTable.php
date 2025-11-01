@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Inventory\RawMaterialInventories\Tables;
 
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use App\Services\UnitService;
 use Filament\Actions\EditAction;
 use Filament\Actions\ActionGroup;
@@ -53,7 +54,11 @@ class RawMaterialInventoriesTable
                 TextColumn::make('in_all')
                     ->label('In (Other Units)')
                     ->toggleable()
+                    ->placeholder('---')
                     ->getStateUsing(function ($record) {
+                        if (!in_array($record->rawMaterial?->type->name, ['twisted_yarn', 'yarns', 'dyed_yarn'])) {
+                            return;
+                        }
                         $output = [];
                         foreach (UnitService::getUnits() as $unit) {
                             if ($record->rawMaterial?->unit->id !== $unit->id) {
@@ -71,6 +76,9 @@ class RawMaterialInventoriesTable
                     ->label('Out (Other Units)')
                     ->toggleable()
                     ->getStateUsing(function ($record) {
+                        if (!in_array($record->rawMaterial?->type->name, ['twisted_yarn', 'yarns', 'dyed_yarn'])) {
+                            return;
+                        }
                         $output = [];
                         foreach (UnitService::getUnits() as $unit) {
                             if ($record->rawMaterial?->unit->id !== $unit->id) {
@@ -80,6 +88,7 @@ class RawMaterialInventoriesTable
                         }
                         return implode("<br>", $output);
                     })
+                    ->placeholder('---')
                     ->html()
                     ->alignRight()
                     ->color('info'),
@@ -87,7 +96,11 @@ class RawMaterialInventoriesTable
                 TextColumn::make('balance_all')
                     ->label('Balance (Other Units)')
                     ->toggleable()
+                    ->placeholder('---')
                     ->getStateUsing(function ($record) {
+                        if (!in_array($record->rawMaterial?->type->name, ['twisted_yarn', 'yarns', 'dyed_yarn'])) {
+                            return;
+                        }
                         $output = [];
                         foreach (UnitService::getUnits() as $unit) {
                             if ($record->rawMaterial?->unit->id !== $unit->id) {
@@ -101,27 +114,34 @@ class RawMaterialInventoriesTable
                     ->alignRight()
                     ->color('info'),
 
-                TextColumn::make('rate')
-                    ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                // TextColumn::make('rate')
+                //     ->numeric()
+                //     ->toggleable(isToggledHiddenByDefault: true)
+                //     ->sortable(),
 
-                TextColumn::make('value')
-                    ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                // TextColumn::make('value')
+                //     ->numeric()
+                //     ->toggleable(isToggledHiddenByDefault: true)
+                //     ->sortable(),
 
                 TextColumn::make('reference_type')
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('Source Type')
+                    ->formatStateUsing(fn($record) => class_basename($record->reference_type))
                     ->searchable(),
 
                 TextColumn::make('reference_id')
+                    ->label('Source Reference')
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->formatStateUsing(fn($record) => app($record->reference_type)::find($record->reference_id)->getTitleAttributeName())
                     ->sortable(),
 
                 TextColumn::make('remarks')
                     ->formatStateUsing(function ($record) {
-                        return app($record->reference_type)::find($record->reference_id)?->remarks ?? $record->remarks;
+                        return Str::limit(app($record->reference_type)::find($record->reference_id)?->remarks ?? $record->remarks, 30, '...');
+                    })
+                    ->tooltip(function ($state) {
+                        return $state;
                     })
                     ->searchable(),
 

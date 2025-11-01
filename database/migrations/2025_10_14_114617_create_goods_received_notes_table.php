@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
             $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders')->nullOnDelete();
             $table->string('challan_no')->nullable();
-            $table->date('challan_date');
+            $table->dateTime('challan_date');
             $table->enum('status', ['draft', 'verified']);
             $table->boolean('locked')->default(false);
             $table->text('remarks')->nullable();
