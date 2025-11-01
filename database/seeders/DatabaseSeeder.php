@@ -44,6 +44,14 @@ class DatabaseSeeder extends Seeder
             'password' => 'ahmedshaharyar00@gmail.com'
         ]);
 
+        $user1 = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@birdcoders.com',
+            'password' => '12345678'
+        ]);
+
+
+        $user1->assignRole($role);
         $user1->assignRole($role);
 
         $this->call([
